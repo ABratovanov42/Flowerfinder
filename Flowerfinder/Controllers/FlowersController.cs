@@ -60,6 +60,26 @@ namespace Flowerfinder.Controllers
                 .Skip((page - 1) * PageSize).Take(PageSize).ToListAsync());
         }
 
+        // GET /Flowers/Compare?a=1&b=2&c=3 — up to three flowers side by side
+        public async Task<IActionResult> Compare(int? a, int? b, int? c)
+        {
+            ViewData["Options"] = await _db.Flowers
+                .OrderBy(f => f.CommonName)
+                .Select(f => new ValueTuple<int, string>(f.Id, f.CommonName))
+                .ToListAsync();
+
+            var slots = new[] { a, b, c };
+            var wanted = slots.Where(i => i.HasValue).Select(i => i!.Value).ToList();
+            var found = await _db.Flowers.Where(f => wanted.Contains(f.Id)).ToListAsync();
+
+            ViewData["a"] = a;
+            ViewData["b"] = b;
+            ViewData["c"] = c;
+
+            // keep the slot order so each flower stays under its own dropdown
+            return View(slots.Select(i => i.HasValue ? found.FirstOrDefault(f => f.Id == i.Value) : null).ToList());
+        }
+
         // GET /Flowers/SearchData — lightweight list for the command palette
         [ResponseCache(Duration = 300)]
         public async Task<IActionResult> SearchData()

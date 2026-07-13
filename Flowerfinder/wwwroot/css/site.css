@@ -1023,6 +1023,101 @@ footer.ff-foot .foot-fine {
   box-shadow: 0 0 0 3px rgba(var(--rose-rgb), 0.22);
 }
 
+/* ---- compare page ---- */
+.cmp-hint {
+  text-align: center;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: var(--ink-soft);
+  margin: 3rem auto 4rem;
+}
+
+.cmp-hint-sub { font-size: 0.88rem; color: var(--ink-faint); }
+
+.cmp-scroll {
+  overflow-x: auto;
+  max-width: 1060px;
+  margin: 0 auto 3rem;
+  border-radius: 20px;
+  border: 1px solid rgba(var(--card-rgb), 0.7);
+  background: rgba(var(--card-rgb), 0.72);
+  box-shadow: 0 10px 32px rgba(var(--shadow-rgb), 0.08);
+}
+
+.cmp-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+.cmp-table th, .cmp-table td {
+  padding: 0.85rem 1.1rem;
+  text-align: left;
+  vertical-align: middle;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.08);
+}
+
+.cmp-table thead th { border-top: none; }
+
+.cmp-table .cmp-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  width: 1%;
+}
+
+.cmp-head {
+  display: block;
+  text-decoration: none;
+  padding: 0.4rem 0;
+}
+
+.cmp-head img {
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+  margin-bottom: 0.7rem;
+}
+
+.cmp-head .cmp-name {
+  display: block;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 550;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.cmp-head .cmp-sci {
+  display: block;
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+
+.cmp-head:hover .cmp-name { color: var(--rose); }
+
+.cmp-table tr.differs td {
+  background: rgba(var(--rose-rgb), 0.07);
+}
+
+.cmp-guide {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--rose);
+  text-decoration: none;
+}
+
+.cmp-guide:hover { text-decoration: underline; }
+
 /* ---- pager under the grid ---- */
 .cat-pager {
   display: flex;

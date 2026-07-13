@@ -1,0 +1,123 @@
+@model List<Flower?>
+@{
+    ViewData["Title"] = "Compare flowers";
+    var options = ViewData["Options"] as List<(int Id, string Name)> ?? new();
+    var slotIds = new[] { ViewData["a"] as int?, ViewData["b"] as int?, ViewData["c"] as int? };
+    var chosen = Model.Where(f => f != null).Cast<Flower>().ToList();
+
+    // a row gets the soft highlight when the flowers actually differ there
+    bool Differs(Func<Flower, string?> pick) =>
+        chosen.Select(f => (pick(f) ?? "").Trim().ToLowerInvariant()).Distinct().Count() > 1;
+}
+
+<div class="cat-header">
+    <div class="kicker">Side by side</div>
+    <h1>Compare flowers</h1>
+</div>
+
+<form method="get" asp-action="Compare" class="cat-filters" id="cmpForm">
+    @for (var s = 0; s < 3; s++)
+    {
+        var slotName = ((char)('a' + s)).ToString();
+        <select name="@slotName" class="form-select" aria-label="Flower @(s + 1)">
+            <option value="">@(s < 2 ? $"Flower {s + 1}…" : "Third flower (optional)…")</option>
+            @foreach (var (id, name) in options)
+            {
+                <option value="@id" selected="@(id == slotIds[s])">@name</option>
+            }
+        </select>
+    }
+    <button type="submit" class="btn-find">Compare</button>
+</form>
+
+@if (chosen.Count < 2)
+{
+    <div class="cmp-hint">
+        <p>Pick at least two flowers above to see them side by side.</p>
+        <p class="cmp-hint-sub">Rows where they differ get a soft highlight, so the differences jump out.</p>
+    </div>
+}
+else
+{
+    <div class="cmp-scroll">
+        <table class="cmp-table">
+            <thead>
+                <tr>
+                    <th class="cmp-label" scope="col"><span class="visually-hidden">Attribute</span></th>
+                    @foreach (var f in chosen)
+                    {
+                        <th scope="col">
+                            <a class="cmp-head" asp-action="Details" asp-route-id="@f.Id">
+                                @if (!string.IsNullOrWhiteSpace(f.ImagePath))
+                                {
+                                    <img src="@f.ImagePath" alt="@f.CommonName" loading="lazy" />
+                                }
+                                <span class="cmp-name">@f.CommonName</span>
+                                <span class="cmp-sci">@f.ScientificName</span>
+                            </a>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="@(Differs(f => f.BloomSeason.Label()) ? "differs" : null)">
+                    <th class="cmp-label" scope="row">Blooms</th>
+                    @foreach (var f in chosen) { <td><span class="chip">@f.BloomSeason.Label()</span></td> }
+                </tr>
+                <tr class="@(Differs(f => f.Sunlight.Label()) ? "differs" : null)">
+                    <th class="cmp-label" scope="row">Light</th>
+                    @foreach (var f in chosen) { <td>@f.Sunlight.Label()</td> }
+                </tr>
+                <tr class="@(Differs(f => f.Watering.Label()) ? "differs" : null)">
+                    <th class="cmp-label" scope="row">Watering</th>
+                    @foreach (var f in chosen) { <td>@f.Watering.Label()</td> }
+                </tr>
+                <tr class="@(Differs(f => f.IsPerennial ? "p" : "a") ? "differs" : null)">
+                    <th class="cmp-label" scope="row">Type</th>
+                    @foreach (var f in chosen) { <td>@(f.IsPerennial ? "Perennial — comes back" : "Annual — replant yearly")</td> }
+                </tr>
+                <tr>
+                    <th class="cmp-label" scope="row">Colours</th>
+                    @foreach (var f in chosen)
+                    {
+                        <td>
+                            <span class="swatches">
+                                @foreach (var c in (f.Colors ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                                {
+                                    <i style="background:@CareLabels.Hex(c)" title="@c"></i>
+                                }
+                            </span>
+                        </td>
+                    }
+                </tr>
+                <tr class="@(Differs(f => f.SoilType) ? "differs" : null)">
+                    <th class="cmp-label" scope="row">Soil</th>
+                    @foreach (var f in chosen) { <td>@(f.SoilType ?? "—")</td> }
+                </tr>
+                <tr class="@(Differs(f => f.NativeRegion) ? "differs" : null)">
+                    <th class="cmp-label" scope="row">Native to</th>
+                    @foreach (var f in chosen) { <td>@(f.NativeRegion ?? "—")</td> }
+                </tr>
+                <tr class="@(Differs(f => f.Family) ? "differs" : null)">
+                    <th class="cmp-label" scope="row">Family</th>
+                    @foreach (var f in chosen) { <td><em>@(f.Family ?? "—")</em></td> }
+                </tr>
+                <tr>
+                    <th class="cmp-label" scope="row"></th>
+                    @foreach (var f in chosen)
+                    {
+                        <td><a class="cmp-guide" asp-action="Details" asp-route-id="@f.Id">Full guide &rarr;</a></td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // pick a flower and the comparison refreshes itself
+        document.querySelectorAll("#cmpForm select").forEach((s) =>
+            s.addEventListener("change", () => s.form.submit()));
+    </script>
+}
