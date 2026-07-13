@@ -23,6 +23,12 @@
                 document.documentElement.classList.add("dark");
             }
         } catch (e) { }
+        // flower cursor: on unless the visitor switched it off (button in the nav)
+        try {
+            if (localStorage.getItem("ffCursor") !== "off" && matchMedia("(pointer: fine)").matches) {
+                document.documentElement.classList.add("flower-cursor");
+            }
+        } catch (e) { }
         // first visit this session: show the blooming loader (skipped for reduced motion)
         try {
             if (!sessionStorage.getItem("ffSeen") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -78,6 +84,17 @@
                     </svg>
                     <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z" />
+                    </svg>
+                </button>
+                <button class="ff-theme" id="ffCursor" type="button" aria-pressed="true"
+                        aria-label="Toggle the flower cursor" title="Flower cursor on/off">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="2.6" />
+                        <path d="M12 9.4 C10.6 7.6 10.6 4.4 12 2.8 C13.4 4.4 13.4 7.6 12 9.4" />
+                        <path d="M12 9.4 C10.6 7.6 10.6 4.4 12 2.8 C13.4 4.4 13.4 7.6 12 9.4" transform="rotate(72 12 12)" />
+                        <path d="M12 9.4 C10.6 7.6 10.6 4.4 12 2.8 C13.4 4.4 13.4 7.6 12 9.4" transform="rotate(144 12 12)" />
+                        <path d="M12 9.4 C10.6 7.6 10.6 4.4 12 2.8 C13.4 4.4 13.4 7.6 12 9.4" transform="rotate(216 12 12)" />
+                        <path d="M12 9.4 C10.6 7.6 10.6 4.4 12 2.8 C13.4 4.4 13.4 7.6 12 9.4" transform="rotate(288 12 12)" />
                     </svg>
                 </button>
                 <a class="ff-cta" asp-controller="Identify" asp-action="Index">Identify&nbsp;&rarr;</a>
@@ -160,6 +177,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/nav.js" asp-append-version="true"></script>
+    <script src="~/js/cursor.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

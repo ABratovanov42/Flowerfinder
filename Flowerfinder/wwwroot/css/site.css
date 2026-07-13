@@ -1023,6 +1023,31 @@ footer.ff-foot .foot-fine {
   box-shadow: 0 0 0 3px rgba(var(--rose-rgb), 0.22);
 }
 
+/* ---- flower cursor (nav toggle saves the choice; class set before first paint) ---- */
+html.flower-cursor body {
+  cursor: url("../images/cursor-flower.svg") 13 13, auto;
+}
+
+html.flower-cursor a,
+html.flower-cursor button,
+html.flower-cursor select,
+html.flower-cursor summary,
+html.flower-cursor [role="button"],
+html.flower-cursor input[type="submit"],
+html.flower-cursor input[type="checkbox"],
+html.flower-cursor label[for] {
+  cursor: url("../images/cursor-flower-hover.svg") 13 13, pointer;
+}
+
+/* typing fields keep the familiar text beam */
+html.flower-cursor input:not([type="submit"]):not([type="checkbox"]),
+html.flower-cursor textarea {
+  cursor: auto;
+}
+
+/* the toggle button reads as off when the cursor is plain */
+#ffCursor[aria-pressed="false"] { opacity: 0.45; }
+
 /* ---- compare page ---- */
 .cmp-hint {
   text-align: center;
