@@ -1,0 +1,85 @@
+@{
+    ViewData["Title"] = "Identify a flower";
+    var configured = ViewData["Configured"] as bool? ?? false;
+    var demo = ViewData["Demo"] as bool? ?? false;
+}
+
+<div class="identify-page">
+    <div class="cat-header">
+        <div class="kicker">The identifier</div>
+        <h1>What flower is this?</h1>
+        @if (demo)
+        {
+            <div class="demo-badge" title="Add a free PlantNet API key in appsettings.json for real identification">
+                Demo mode &mdash; answers are staged
+            </div>
+        }
+    </div>
+
+    @if (!configured)
+    {
+        <div class="id-setup">
+            <p>Photo identification isn't switched on yet.</p>
+            <p class="how">
+                Grab a free API key at <a href="https://my.plantnet.org" target="_blank" rel="noopener">my.plantnet.org</a>
+                and put it in <code>appsettings.json</code> under <code>PlantNet:ApiKey</code>
+                &mdash; or set it to <code>demo</code> to try the flow with a staged answer.
+            </p>
+        </div>
+    }
+    else
+    {
+        <form id="idForm" class="id-stage" data-analyze-url="@Url.Action("Analyze", "Identify")">
+            @Html.AntiForgeryToken()
+
+            @* --- state 1: the drop zone --- *@
+            <label class="drop-zone" id="dropZone" for="photoInput">
+                <svg class="dz-sprig" viewBox="0 0 60 40" fill="none" stroke="#c9688f" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                    <path d="M30 38 C30 24 30 14 30 6" />
+                    <path d="M30 20 C24 16 18 15 13 17 C17 23 24 24 30 22" />
+                    <path d="M30 14 C36 10 42 9 47 11 C43 17 36 18 30 16" />
+                    <circle cx="30" cy="5" r="3" />
+                </svg>
+                <div class="dz-title">Drop a photo here</div>
+                <div class="dz-sub">or <span class="dz-browse">browse</span> &mdash; on a phone, this opens your camera roll</div>
+                <div class="dz-fine">JPEG, PNG or WebP &middot; up to 10&nbsp;MB</div>
+                <input type="file" id="photoInput" name="photo" accept="image/jpeg,image/png,image/webp" hidden />
+            </label>
+
+            @* --- state 2: preview + go --- *@
+            <div class="id-preview" id="idPreview" hidden>
+                <div class="preview-frame">
+                    <img id="previewImg" alt="Your photo" />
+                </div>
+                <div class="preview-actions">
+                    <button type="submit" class="btn-bloom" id="goBtn">Identify this flower&nbsp;<span class="arr">&rarr;</span></button>
+                    <button type="button" class="btn-ghost" id="changeBtn">Different photo</button>
+                </div>
+            </div>
+
+            @* --- state 3: thinking --- *@
+            <div class="id-thinking" id="idThinking" hidden aria-live="polite">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg"
+                     stroke="#c9688f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path class="tp" style="--r:0deg"   d="M60 64 C52 48 52 26 60 14 C68 26 68 48 60 64" fill="#f5aecb" fill-opacity="0.55" />
+                    <path class="tp" style="--r:60deg"  d="M60 64 C52 48 52 26 60 14 C68 26 68 48 60 64" fill="#f5aecb" fill-opacity="0.55" />
+                    <path class="tp" style="--r:120deg" d="M60 64 C52 48 52 26 60 14 C68 26 68 48 60 64" fill="#f5aecb" fill-opacity="0.55" />
+                    <path class="tp" style="--r:180deg" d="M60 64 C52 48 52 26 60 14 C68 26 68 48 60 64" fill="#f5aecb" fill-opacity="0.55" />
+                    <path class="tp" style="--r:240deg" d="M60 64 C52 48 52 26 60 14 C68 26 68 48 60 64" fill="#f5aecb" fill-opacity="0.55" />
+                    <path class="tp" style="--r:300deg" d="M60 64 C52 48 52 26 60 14 C68 26 68 48 60 64" fill="#f5aecb" fill-opacity="0.55" />
+                    <circle cx="60" cy="64" r="7" fill="#f2cd7d" fill-opacity="0.9" />
+                </svg>
+                <div class="think-word">Reading the petals&hellip;</div>
+            </div>
+
+            @* --- state 4: results (filled in by identify.js) --- *@
+            <div class="id-results" id="idResults" hidden aria-live="polite"></div>
+
+            <div class="id-error" id="idError" hidden role="alert"></div>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/identify.js" asp-append-version="true"></script>
+}

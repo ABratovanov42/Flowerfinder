@@ -1,0 +1,17 @@
+@model Flower
+@{
+    ViewData["Title"] = $"Edit {Model.CommonName}";
+}
+
+<div class="flower-form">
+    <h1>Edit @Model.CommonName</h1>
+    <form asp-action="Edit" method="post">
+        <partial name="_FlowerForm" model="Model" />
+        <button type="submit" class="btn-save">Save changes</button>
+        <a class="btn-cancel" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

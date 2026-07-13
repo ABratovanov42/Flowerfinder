@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Page not found";
+}
+
+<div class="flower-detail" style="text-align:center; padding-top:4.5rem;">
+    <svg style="width:64px; margin:0 auto 1.4rem; display:block; transform:rotate(160deg); opacity:.75"
+         viewBox="0 0 60 40" fill="none" stroke="#c9688f" stroke-width="1.6" stroke-linecap="round">
+        <path d="M30 38 C30 24 30 14 30 6" />
+        <path d="M30 20 C24 16 18 15 13 17 C17 23 24 24 30 22" />
+        <path d="M30 14 C36 10 42 9 47 11 C43 17 36 18 30 16" />
+        <circle cx="30" cy="5" r="3" />
+    </svg>
+    <h1>This flower seems to have wilted.</h1>
+    <p class="story" style="max-width:34em; margin:1rem auto 2rem;">
+        The page you were looking for isn't growing here &mdash; it may have been
+        moved, pruned, or never planted at all.
+    </p>
+    <div style="display:flex; gap:.9rem; justify-content:center; flex-wrap:wrap;">
+        <a class="btn-bloom" asp-controller="Flowers" asp-action="Index" style="font-family:'Inter','Segoe UI',sans-serif; display:inline-block; background:linear-gradient(135deg,#e0709a,#c2547c); color:#fff; font-weight:600; padding:.8rem 1.9rem; border-radius:999px; text-decoration:none; box-shadow:0 12px 32px rgba(194,84,124,.32);">Browse the catalog</a>
+        <a class="btn-ghost" asp-controller="Home" asp-action="Index" style="font-family:'Inter','Segoe UI',sans-serif; display:inline-block; color:#3d3a35; font-weight:500; padding:.8rem 1.7rem; border-radius:999px; border:1px solid rgba(61,58,53,.22); text-decoration:none; background:rgba(255,255,255,.4);">Back home</a>
+    </div>
+</div>

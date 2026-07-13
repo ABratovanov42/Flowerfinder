@@ -1,0 +1,211 @@
+@model List<Flower>
+@{
+    ViewData["Title"] = "Flower catalog";
+    var q = ViewData["q"] as string;
+    var color = ViewData["color"] as string;
+    var sun = ViewData["sun"] as Sunlight?;
+    var season = ViewData["season"] as BloomSeason?;
+    var water = ViewData["water"] as Watering?;
+    var perennial = ViewData["perennial"] as bool?;
+    var page = (int)(ViewData["page"] ?? 1);
+    var totalPages = (int)(ViewData["totalPages"] ?? 1);
+    var total = (int)(ViewData["total"] ?? Model.Count);
+    var anyFilter = !string.IsNullOrWhiteSpace(q) || !string.IsNullOrWhiteSpace(color)
+        || sun.HasValue || season.HasValue || water.HasValue || perennial.HasValue;
+
+    // Catalog URL keeping the current filters, with optional tweaks:
+    // drop one filter (the chips' ×), override one (the colour dots),
+    // or jump to a page (the pager). Changing filters resets to page 1.
+    string CatalogUrl(string? drop = null, string? set = null, string? setValue = null, int toPage = 1)
+    {
+        var parts = new List<string>();
+        void Add(string key, string? val)
+        {
+            if (key == drop) return;
+            if (key == set) val = setValue;
+            if (!string.IsNullOrWhiteSpace(val)) parts.Add(key + "=" + Uri.EscapeDataString(val));
+        }
+        Add("q", q);
+        Add("color", color);
+        Add("sun", sun?.ToString());
+        Add("season", season?.ToString());
+        Add("water", water?.ToString());
+        Add("perennial", perennial?.ToString().ToLowerInvariant());
+        if (toPage > 1) parts.Add("page=" + toPage);
+        return "/Flowers" + (parts.Count > 0 ? "?" + string.Join("&", parts) : "");
+    }
+    string WithoutFilter(string drop) => CatalogUrl(drop: drop);
+
+    var chipColors = new[] { "Red", "Pink", "White", "Yellow", "Orange", "Purple", "Blue" };
+}
+
+<div class="cat-header">
+    <div class="kicker">The catalog</div>
+    <h1>Find your flower</h1>
+</div>
+
+<form method="get" asp-action="Index" class="cat-filters" id="catFilters">
+    <input type="text" name="q" value="@q" class="form-control" placeholder="Search by name&hellip;" />
+    @* colour is picked with the dots below; this keeps it through form submits *@
+    <input type="hidden" name="color" value="@color" />
+    <select name="sun" class="form-select" aria-label="Light">
+        <option value="">Any light</option>
+        @foreach (Sunlight s in Enum.GetValues<Sunlight>())
+        {
+            <option value="@s" selected="@(s == sun)">@s.Label()</option>
+        }
+    </select>
+    <select name="season" class="form-select" aria-label="Season">
+        <option value="">Any season</option>
+        @foreach (BloomSeason b in Enum.GetValues<BloomSeason>())
+        {
+            <option value="@b" selected="@(b == season)">@b.Label()</option>
+        }
+    </select>
+    <select name="water" class="form-select" aria-label="Watering">
+        <option value="">Any watering</option>
+        @foreach (Watering w in Enum.GetValues<Watering>())
+        {
+            <option value="@w" selected="@(w == water)">@w.Label()</option>
+        }
+    </select>
+    <select name="perennial" class="form-select" aria-label="Plant type">
+        <option value="">Any type</option>
+        <option value="true" selected="@(perennial == true)">Perennial — comes back</option>
+        <option value="false" selected="@(perennial == false)">Annual — replant yearly</option>
+    </select>
+    <button type="submit" class="btn-find">Filter</button>
+</form>
+
+<div class="color-row" role="group" aria-label="Filter by colour">
+    @foreach (var c in chipColors)
+    {
+        var active = c.Equals(color, StringComparison.OrdinalIgnoreCase);
+        <a class="color-chip @(active ? "active" : "")"
+           href="@(active ? WithoutFilter("color") : CatalogUrl(set: "color", setValue: c))"
+           title="@c" aria-label="@c flowers" aria-pressed="@(active ? "true" : "false")">
+            <i style="background:@CareLabels.Hex(c)"></i>
+        </a>
+    }
+</div>
+
+@if (anyFilter)
+{
+    <div class="cat-chips">
+        @if (!string.IsNullOrWhiteSpace(q))
+        {
+            <a href="@WithoutFilter("q")">&ldquo;@q&rdquo; <span>&times;</span></a>
+        }
+        @if (!string.IsNullOrWhiteSpace(color))
+        {
+            <a href="@WithoutFilter("color")"><i class="dot" style="background:@CareLabels.Hex(color)"></i>@color <span>&times;</span></a>
+        }
+        @if (sun.HasValue)
+        {
+            <a href="@WithoutFilter("sun")">@sun.Value.Label() <span>&times;</span></a>
+        }
+        @if (season.HasValue)
+        {
+            <a href="@WithoutFilter("season")">@season.Value.Label() <span>&times;</span></a>
+        }
+        @if (water.HasValue)
+        {
+            <a href="@WithoutFilter("water")">@water.Value.Label() <span>&times;</span></a>
+        }
+        @if (perennial.HasValue)
+        {
+            <a href="@WithoutFilter("perennial")">@(perennial.Value ? "Perennial" : "Annual") <span>&times;</span></a>
+        }
+        <a class="chip-clear" asp-action="Index">Clear all</a>
+    </div>
+}
+
+<div class="cat-count">@total @(total == 1 ? "flower" : "flowers")@(anyFilter ? " found" : " in the catalog")</div>
+
+@* shown when the server found nothing — and revealed live when a
+   search leaves no cards standing (catalog.js) *@
+<div class="cat-empty" id="catEmpty" hidden="@(Model.Count == 0 ? null : "hidden")">
+    <svg class="wilt" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg"
+         stroke="#c9688f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M60 148 C58 118 62 96 60 66" />
+        <path d="M60 112 C50 106 40 105 33 108 C38 116 50 117 60 112" />
+        <g class="wilt-head">
+            <path d="M60 64 C52 48 52 28 60 16 C68 28 68 48 60 64" fill="#f5aecb" fill-opacity="0.4" />
+            <path d="M60 64 C52 48 52 28 60 16 C68 28 68 48 60 64" fill="#f5aecb" fill-opacity="0.4" transform="rotate(65 60 64)" />
+            <path d="M60 64 C52 48 52 28 60 16 C68 28 68 48 60 64" fill="#f5aecb" fill-opacity="0.4" transform="rotate(-65 60 64)" />
+            <path d="M60 64 C52 48 52 28 60 16 C68 28 68 48 60 64" fill="#f5aecb" fill-opacity="0.4" transform="rotate(130 60 64)" />
+            <path d="M60 64 C52 48 52 28 60 16 C68 28 68 48 60 64" fill="#f5aecb" fill-opacity="0.4" transform="rotate(-130 60 64)" />
+            <circle cx="60" cy="64" r="6" fill="#f2cd7d" fill-opacity="0.85" />
+        </g>
+        <path class="wilt-fall" d="M60 40 C56 33 56 24 60 18 C64 24 64 33 60 40" fill="#f5aecb" fill-opacity="0.5" />
+    </svg>
+    <p>No flowers matched.</p>
+    <a class="btn-find" asp-action="Index">Clear the filters</a>
+</div>
+
+@if (Model.Count > 0)
+{
+    <div class="flower-grid">
+        @{ var i = 0; }
+        @foreach (var f in Model)
+        {
+            <a class="flower-card" asp-action="Details" asp-route-id="@f.Id" style="--d:@i">
+                @if (!string.IsNullOrWhiteSpace(f.ImagePath))
+                {
+                    <div class="photo-frame">
+                        <img class="card-photo" src="@f.ImagePath" alt="@f.CommonName" loading="lazy" />
+                        <span class="view-hint">View &rarr;</span>
+                    </div>
+                }
+                <div class="swatches">
+                    @foreach (var c in (f.Colors ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                    {
+                        <i style="background:@CareLabels.Hex(c)" title="@c"></i>
+                    }
+                </div>
+                <h3>@f.CommonName</h3>
+                <div class="sci">@f.ScientificName</div>
+                <span class="chip">@f.BloomSeason.Label()</span>
+                <span class="chip">@f.Sunlight.Label()</span>
+                @if (f.IsPerennial)
+                {
+                    <span class="chip">Perennial</span>
+                }
+            </a>
+            i++;
+        }
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <nav class="cat-pager" aria-label="Catalog pages">
+            @if (page > 1)
+            {
+                <a class="pager-step" href="@CatalogUrl(toPage: page - 1)" rel="prev">&larr; Previous</a>
+            }
+            @for (var p = 1; p <= totalPages; p++)
+            {
+                if (p == page)
+                {
+                    <span class="pager-num current" aria-current="page">@p</span>
+                }
+                else
+                {
+                    <a class="pager-num" href="@CatalogUrl(toPage: p)">@p</a>
+                }
+            }
+            @if (page < totalPages)
+            {
+                <a class="pager-step" href="@CatalogUrl(toPage: page + 1)" rel="next">Next &rarr;</a>
+            }
+        </nav>
+    }
+}
+
+<div class="cat-admin-link">
+    <a asp-action="Create">+ Add a flower</a>
+</div>
+
+@section Scripts {
+    <script src="~/js/catalog.js" asp-append-version="true"></script>
+}

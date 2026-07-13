@@ -1,0 +1,17 @@
+@model Flower
+@{
+    ViewData["Title"] = "Add a flower";
+}
+
+<div class="flower-form">
+    <h1>Add a flower</h1>
+    <form asp-action="Create" method="post">
+        <partial name="_FlowerForm" model="Model" />
+        <button type="submit" class="btn-save">Add to catalog</button>
+        <a class="btn-cancel" asp-action="Index">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

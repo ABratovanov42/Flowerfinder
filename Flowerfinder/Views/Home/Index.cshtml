@@ -1,0 +1,858 @@
+@{
+    ViewData["Title"] = "Every flower has a story";
+    var blooming = ViewData["Blooming"] as List<Flower> ?? new List<Flower>();
+    var season = ViewData["Season"] as BloomSeason? ?? BloomSeason.Summer;
+    var monthTasks = ViewData["MonthTasks"] as List<(Flower Flower, string Task)> ?? new();
+    var monthName = ViewData["MonthName"] as string ?? "";
+}
+
+@* ============================================================
+   FLOWERFINDER FRONT PAGE — warm, clean, typography-led.
+   Soft drifting gradient washes, a line-art flower that draws
+   itself in behind the headline, gently falling petals, and
+   feature cards that fade up on scroll (GSAP in js/home.js).
+   ============================================================ *@
+
+<style>
+    /* Colour tokens (--ink, --rose, --cream, …) live in site.css
+       and flip with the theme. */
+
+    /* Smooth gliding for in-page anchor links only — wheel and
+       keyboard scrolling stay native and instant */
+    html { scroll-behavior: smooth; }
+    body { background: var(--cream); overflow-x: hidden; padding-top: 0; } /* hero runs under the glass bar */
+
+    /* ---------- Soft drifting background washes ---------- */
+    .bg-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    /* Soft washes via radial gradients (cheap to composite —
+       no blur filter) each promoted to its own GPU layer */
+    .blob {
+        position: absolute;
+        border-radius: 50%;
+        will-change: transform;
+    }
+
+    .blob-peach { width: 75vw; height: 75vw; background: radial-gradient(circle, rgba(255,220,196,0.75) 0%, rgba(255,220,196,0) 65%); top: -25vw; right: -20vw; }
+    .blob-blush { width: 65vw; height: 65vw; background: radial-gradient(circle, rgba(255,205,217,0.6) 0%, rgba(255,205,217,0) 65%); top: 26vh;  left: -26vw; }
+    .blob-sage  { width: 70vw; height: 70vw; background: radial-gradient(circle, rgba(220,235,207,0.7) 0%, rgba(220,235,207,0) 65%); bottom: -28vw; right: -15vw; }
+    .blob-gold  { width: 45vw; height: 45vw; background: radial-gradient(circle, rgba(248,233,198,0.65) 0%, rgba(248,233,198,0) 65%); top: 58vh;  left: 32vw; }
+
+    /* Everything readable sits above the washes */
+    main { position: relative; z-index: 2; }
+
+    /* ---------- "In bloom right now" ---------- */
+    .blooming {
+        padding: 4.5rem 0 2rem;
+    }
+
+    .blooming .section-kicker {
+        text-align: center;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.45em;
+        text-transform: uppercase;
+        color: var(--rose);
+        margin-bottom: 0.9rem;
+    }
+
+    .blooming h2 {
+        text-align: center;
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 550;
+        font-size: clamp(1.9rem, 4vw, 2.8rem);
+        color: var(--ink);
+        margin-bottom: 2.4rem;
+    }
+
+    /* an edge-faded snap ribbon, like a product carousel:
+       cards peek at the edges and glide card-by-card */
+    .bloom-wrap {
+        position: relative;
+        max-width: 1060px;
+        margin: 0 auto 2rem;
+    }
+
+    .bloom-row {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 236px;
+        gap: 1.2rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding: 0.6rem 2.4rem 1.4rem;
+        cursor: grab;
+        scrollbar-width: none;
+        mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    }
+
+    .bloom-row::-webkit-scrollbar { display: none; }
+
+    .bloom-row .flower-card { scroll-snap-align: center; }
+
+    .bloom-row.dragging {
+        scroll-snap-type: none;
+        cursor: grabbing;
+        user-select: none;
+    }
+
+    .bloom-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 3;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid rgba(var(--ink-rgb), 0.15);
+        background: rgba(var(--card-rgb), 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: var(--ink);
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.12);
+        transition: transform 0.25s cubic-bezier(.2,.8,.3,1.2), opacity 0.25s, color 0.2s, border-color 0.2s;
+    }
+
+    .bloom-arrow:hover {
+        color: var(--rose);
+        border-color: rgba(var(--rose-rgb), 0.5);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .bloom-arrow.prev { left: -14px; }
+    .bloom-arrow.next { right: -14px; }
+
+    .bloom-arrow[disabled] { opacity: 0; pointer-events: none; }
+
+    @@media (max-width: 768px) {
+        .bloom-arrow { display: none; }
+    }
+
+    .blooming .browse-all {
+        text-align: center;
+    }
+
+    /* ---------- Falling petals ---------- */
+    .petal-field {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .petal {
+        position: absolute;
+        top: -30px;
+        background: radial-gradient(ellipse at 30% 30%, #ffd9e5, #f3a5c3);
+        border-radius: 62% 38% 55% 45%;
+        opacity: 0.65;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        padding: 7rem 1rem 4rem;
+    }
+
+    /* The flower is centred by a flex wrapper so GSAP can freely
+       transform the SVG itself (sway, scale) without breaking layout */
+    .hero-flower-wrap {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .hero-flower {
+        width: min(78vh, 640px);
+        max-width: 92vw;
+        margin-top: -4vh;
+        opacity: 0.55;
+    }
+
+    .hero-copy { position: relative; z-index: 2; }
+
+    /* CTA that blooms in at the end of the scroll story */
+    .bloom-cta {
+        position: absolute;
+        bottom: 11vh;
+        left: 0; right: 0;
+        text-align: center;
+        z-index: 3;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .bloom-cta .bloom-kicker {
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-weight: 450;
+        font-size: clamp(1.25rem, 2.6vw, 1.75rem);
+        color: var(--ink);
+        margin-bottom: 1.1rem;
+    }
+
+    /* Line-art butterfly that lands on the bloom */
+    #butterfly {
+        position: absolute;
+        width: 58px;
+        top: 30%;
+        left: calc(50% + 108px);
+        z-index: 2;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* ---------- Species marquee ---------- */
+    .species-marquee {
+        overflow: hidden;
+        padding: 2.2rem 0;
+        border-top: 1px solid rgba(var(--ink-rgb), 0.07);
+        border-bottom: 1px solid rgba(var(--ink-rgb), 0.07);
+        background: rgba(var(--card-rgb), 0.35);
+    }
+
+    .marquee-track {
+        display: inline-flex;
+        align-items: center;
+        gap: 2.6rem;
+        white-space: nowrap;
+        will-change: transform;
+        animation: marqueeSlide 48s linear infinite;
+    }
+
+    .marquee-track span {
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-size: 1.35rem;
+        color: rgba(var(--ink-rgb), 0.45);
+    }
+
+    .marquee-track i {
+        font-style: normal;
+        color: rgba(var(--rose-rgb), 0.5);
+    }
+
+    @@keyframes marqueeSlide {
+        from { transform: translateX(0); }
+        to   { transform: translateX(-50%); }
+    }
+
+    .hero .eyebrow {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5em;
+        text-transform: uppercase;
+        color: var(--rose);
+        margin-bottom: 1.4rem;
+    }
+
+    .hero h1 {
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 550;
+        font-size: clamp(2.8rem, 7vw, 5.2rem);
+        line-height: 1.06;
+        color: var(--ink);
+        margin: 0;
+    }
+
+    .hero h1 em {
+        font-style: italic;
+        color: var(--rose);
+    }
+
+    /* Word-mask reveal: each word rises out of its own clip */
+    .hero h1 .w {
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: bottom;
+    }
+
+    .hero h1 .wi {
+        display: inline-block;
+        will-change: transform;
+    }
+
+    .hero .lede {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-size: clamp(1.02rem, 2vw, 1.22rem);
+        color: var(--ink-soft);
+        max-width: 34em;
+        margin: 1.6rem auto 2.4rem;
+        line-height: 1.65;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 0.9rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-bloom {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        display: inline-block;
+        background: linear-gradient(135deg, var(--rose-light), var(--rose));
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.02rem;
+        padding: 0.9rem 2.1rem;
+        border-radius: 999px;
+        text-decoration: none;
+        box-shadow: 0 12px 32px rgba(var(--rose-rgb), 0.32), inset 0 1px 0 rgba(255,255,255,0.3);
+        transition: transform 0.25s cubic-bezier(.2,.8,.3,1.3), box-shadow 0.25s;
+    }
+
+    .btn-bloom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 42px rgba(var(--rose-rgb), 0.42), inset 0 1px 0 rgba(255,255,255,0.3);
+        color: #fff;
+    }
+
+    .btn-ghost {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        display: inline-block;
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 1.02rem;
+        padding: 0.9rem 1.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(var(--ink-rgb), 0.22);
+        text-decoration: none;
+        background: rgba(var(--card-rgb), 0.4);
+        transition: background 0.25s, border-color 0.25s, transform 0.25s;
+    }
+
+    .btn-ghost:hover {
+        background: rgba(var(--card-rgb), 0.85);
+        border-color: rgba(var(--ink-rgb), 0.35);
+        color: var(--ink);
+        transform: translateY(-2px);
+    }
+
+    .hero-hint {
+        position: absolute;
+        bottom: 4vh;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: rgba(var(--ink-rgb), 0.45);
+    }
+
+    .hero-hint::after {
+        content: "";
+        display: block;
+        width: 1px;
+        height: 34px;
+        margin: 10px auto 0;
+        background: linear-gradient(rgba(var(--ink-rgb),0.35), rgba(var(--ink-rgb),0));
+    }
+
+    /* ---------- Features ---------- */
+    .features {
+        padding: 5rem 0 3rem;
+    }
+
+    .features .section-kicker {
+        text-align: center;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.45em;
+        text-transform: uppercase;
+        color: var(--rose);
+        margin-bottom: 0.9rem;
+    }
+
+    .features h2 {
+        text-align: center;
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 550;
+        font-size: clamp(1.9rem, 4vw, 2.8rem);
+        color: var(--ink);
+        margin-bottom: 3rem;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.4rem;
+        max-width: 1020px;
+        margin: 0 auto;
+    }
+
+    .feature-card {
+        background: rgba(var(--card-rgb), 0.72);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(var(--card-rgb), 0.7);
+        border-radius: 24px;
+        padding: 2.1rem 1.9rem;
+        box-shadow: 0 14px 44px rgba(var(--shadow-rgb), 0.09);
+        transition: transform 0.3s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.3s;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 22px 56px rgba(var(--shadow-rgb), 0.13);
+    }
+
+    .feature-card .icon-ring {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.2rem;
+        color: var(--rose);
+    }
+
+    .feature-card:nth-child(1) .icon-ring { background: #ffe3ec; }
+    .feature-card:nth-child(2) .icon-ring { background: #e4f0d8; color: #5d8a42; }
+    .feature-card:nth-child(3) .icon-ring { background: #fdeed2; color: #b8863a; }
+
+    .feature-card h3 {
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 550;
+        font-size: 1.32rem;
+        color: var(--ink);
+        margin-bottom: 0.55rem;
+    }
+
+    .feature-card p {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-size: 0.95rem;
+        line-height: 1.65;
+        color: var(--ink-soft);
+        margin: 0;
+    }
+
+    /* ---------- Closing band + footer ---------- */
+    .closing {
+        text-align: center;
+        padding: 5.5rem 1rem 3rem;
+    }
+
+    .closing .sprig { width: 54px; margin: 0 auto 1.6rem; opacity: 0.8; display: block; }
+
+    .closing h2 {
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-weight: 450;
+        font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+        color: var(--ink);
+        margin-bottom: 1.8rem;
+    }
+
+    /* Elements revealed on scroll start hidden (GSAP animates in) */
+    .reveal { opacity: 0; }
+
+    /* ---------- Scroll progress vine ---------- */
+    .progress-vine {
+        position: fixed;
+        right: 2.2vw;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 34vh;
+        background: rgba(var(--ink-rgb), 0.1);
+        border-radius: 2px;
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    .progress-vine .fill {
+        width: 100%;
+        height: 100%;
+        transform-origin: top;
+        transform: scaleY(0);
+        background: linear-gradient(var(--rose-light), var(--rose));
+        border-radius: 2px;
+    }
+
+    @@media (max-width: 768px) {
+        .progress-vine { display: none; }
+    }
+
+    /* Editorial step numbers on the cards */
+    .feature-card { position: relative; }
+
+    .step-no {
+        position: absolute;
+        top: 1.2rem;
+        right: 1.5rem;
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-size: 1.9rem;
+        color: rgba(var(--rose-rgb), 0.22);
+        line-height: 1;
+    }
+
+    /* Icons tip playfully when their card is hovered */
+    .feature-card .icon-ring {
+        transition: transform 0.35s cubic-bezier(.2, .8, .3, 1.4);
+    }
+
+    .feature-card:hover .icon-ring {
+        transform: rotate(-8deg) scale(1.1);
+    }
+
+    /* Button arrows nudge forward on hover */
+    .btn-bloom .arr {
+        display: inline-block;
+        transition: transform 0.25s cubic-bezier(.2, .8, .3, 1.2);
+    }
+
+    .btn-bloom:hover .arr { transform: translateX(5px); }
+
+    /* ---------- This month in the garden ---------- */
+    .month-garden {
+        padding: 4.5rem 0 2rem;
+        max-width: 880px;
+        margin: 0 auto;
+    }
+
+    .month-garden h2 {
+        text-align: center;
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 550;
+        font-size: clamp(1.9rem, 4vw, 2.8rem);
+        color: var(--ink);
+        margin-bottom: 0.7rem;
+    }
+
+    .month-lede {
+        text-align: center;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-size: 1rem;
+        color: var(--ink-soft);
+        margin: 0 auto 2.2rem;
+        max-width: 36em;
+    }
+
+    .task-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 0.9rem;
+    }
+
+    .task-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-decoration: none;
+        background: rgba(var(--card-rgb), 0.72);
+        border: 1px solid rgba(var(--card-rgb), 0.7);
+        border-radius: 18px;
+        padding: 0.9rem 1.1rem;
+        box-shadow: 0 8px 26px rgba(var(--shadow-rgb), 0.07);
+        transition: transform 0.25s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.25s;
+    }
+
+    html.dark .task-row { border-color: rgba(255, 255, 255, 0.07); }
+
+    .task-row:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 14px 36px rgba(var(--shadow-rgb), 0.12);
+    }
+
+    .task-thumb {
+        flex: 0 0 52px;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .task-name {
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 550;
+        font-size: 1.05rem;
+        color: var(--ink);
+    }
+
+    .task-what {
+        font-family: 'Inter', 'Segoe UI', sans-serif;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        color: var(--ink-soft);
+    }
+
+    .task-arr {
+        margin-left: auto;
+        color: var(--rose);
+        font-size: 1.1rem;
+        transition: transform 0.25s cubic-bezier(.2,.8,.3,1.2);
+    }
+
+    .task-row:hover .task-arr { transform: translateX(4px); }
+
+    /* ---------- Dusk: the garden after sunset ---------- */
+    html.dark .blob-peach { background: radial-gradient(circle, rgba(120, 62, 70, 0.38) 0%, rgba(120, 62, 70, 0) 65%); }
+    html.dark .blob-blush { background: radial-gradient(circle, rgba(130, 58, 92, 0.32) 0%, rgba(130, 58, 92, 0) 65%); }
+    html.dark .blob-sage  { background: radial-gradient(circle, rgba(52, 80, 58, 0.35) 0%, rgba(52, 80, 58, 0) 65%); }
+    html.dark .blob-gold  { background: radial-gradient(circle, rgba(110, 88, 44, 0.30) 0%, rgba(110, 88, 44, 0) 65%); }
+    html.dark .petal { opacity: 0.35; }
+    html.dark .feature-card { border-color: rgba(255, 255, 255, 0.07); }
+    html.dark .feature-card:nth-child(1) .icon-ring { background: rgba(224, 121, 158, 0.16); }
+    html.dark .feature-card:nth-child(2) .icon-ring { background: rgba(126, 168, 92, 0.16); color: #a4c88a; }
+    html.dark .feature-card:nth-child(3) .icon-ring { background: rgba(216, 166, 84, 0.16); color: #d8b46e; }
+
+    /* Reduced motion: static reveals, no ambient animation.
+       Adding .force-motion to <html> (via ?motion=1) overrides
+       this so the full experience can be previewed. */
+    @@media (prefers-reduced-motion: reduce) {
+        :root:not(.force-motion) .reveal { opacity: 1; }
+        :root:not(.force-motion) .petal-field { display: none; }
+        :root:not(.force-motion) .marquee-track { animation: none; }
+    }
+</style>
+
+@* ---------- Background washes + petals ---------- *@
+<div class="bg-layer">
+    <div class="blob blob-peach"></div>
+    <div class="blob blob-blush"></div>
+    <div class="blob blob-sage"></div>
+    <div class="blob blob-gold"></div>
+</div>
+<div class="petal-field" id="petalField"></div>
+<div class="progress-vine" aria-hidden="true"><div class="fill"></div></div>
+
+@* ---------- Hero ---------- *@
+<section class="hero" id="hero">
+    <div class="hero-flower-wrap">
+        <svg class="hero-flower" id="heroFlower" viewBox="0 0 600 620" fill="none" xmlns="http://www.w3.org/2000/svg"
+             stroke="#c9688f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <defs>
+                <!-- watercolour washes painted in after the line work -->
+                <radialGradient id="petalWash" cx="0.5" cy="0.3" r="0.85">
+                    <stop offset="0" stop-color="#ffdce8" />
+                    <stop offset="1" stop-color="#f5aecb" />
+                </radialGradient>
+                <radialGradient id="leafWash" cx="0.4" cy="0.5" r="0.9">
+                    <stop offset="0" stop-color="#e2efd2" />
+                    <stop offset="1" stop-color="#bcd9a8" />
+                </radialGradient>
+                <radialGradient id="centerWash" cx="0.5" cy="0.4" r="0.8">
+                    <stop offset="0" stop-color="#ffedbf" />
+                    <stop offset="1" stop-color="#f2cd7d" />
+                </radialGradient>
+            </defs>
+            <!-- stem: starts at the ground so it draws upward on scroll -->
+            <path class="draw" id="stemLine" d="M298 620 C314 510 288 460 300 355" />
+            <!-- leaves -->
+            <path class="draw leaf-line" d="M299 478 C268 468 240 470 222 486 C242 504 274 502 299 486" fill="url(#leafWash)" fill-opacity="0" />
+            <path class="draw leaf-line" d="M302 522 C332 512 360 514 378 530 C358 548 326 546 302 530" fill="url(#leafWash)" fill-opacity="0" />
+            <!-- petals: nine teardrop outlines around the centre -->
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" />
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" transform="rotate(40 300 240)" />
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" transform="rotate(80 300 240)" />
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" transform="rotate(120 300 240)" />
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" transform="rotate(160 300 240)" />
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" transform="rotate(200 300 240)" />
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" transform="rotate(240 300 240)" />
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" transform="rotate(280 300 240)" />
+            <path class="draw petal-line" fill="url(#petalWash)" fill-opacity="0" d="M300 218 C284 186 282 128 300 94 C318 128 316 186 300 218" transform="rotate(320 300 240)" />
+            <!-- centre -->
+            <circle class="draw" id="centerRing" cx="300" cy="240" r="17" fill="url(#centerWash)" fill-opacity="0" />
+            <circle class="center-dot" cx="294" cy="236" r="1.6" fill="#c9688f" stroke="none" />
+            <circle class="center-dot" cx="306" cy="238" r="1.6" fill="#c9688f" stroke="none" />
+            <circle class="center-dot" cx="299" cy="245" r="1.6" fill="#c9688f" stroke="none" />
+        </svg>
+    </div>
+
+    <div class="hero-copy" id="heroCopy">
+        <div class="eyebrow reveal" data-hero>Flowerfinder</div>
+        <h1>
+            <span class="w"><span class="wi">Every</span></span>
+            <span class="w"><span class="wi">flower</span></span><br />
+            <span class="w"><span class="wi">has</span></span>
+            <span class="w"><span class="wi">a</span></span>
+            <span class="w"><span class="wi"><em>story</em>.</span></span>
+        </h1>
+        <p class="lede reveal" data-hero>
+            Snap a photo to learn any flower's name, how to help it flourish,
+            and the story behind it &mdash; roses, orchids, wildflowers and everything in between.
+        </p>
+        <div class="hero-actions reveal" data-hero>
+            <a class="btn-bloom" asp-controller="Identify" asp-action="Index">Identify a flower&nbsp;<span class="arr">&rarr;</span></a>
+            <a class="btn-ghost" href="#features">See how it works</a>
+        </div>
+    </div>
+
+    <svg id="butterfly" viewBox="0 0 60 44" fill="none" xmlns="http://www.w3.org/2000/svg"
+         stroke="#c9688f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <g id="bfL">
+            <path d="M28 22 C20 8 8 4 5 11 C2 19 16 25 28 22" />
+            <path d="M28 22 C18 27 11 32 10 28 C9 22 20 20 28 22" />
+        </g>
+        <g id="bfR">
+            <path d="M32 22 C40 8 52 4 55 11 C58 19 44 25 32 22" />
+            <path d="M32 22 C42 27 49 32 50 28 C51 22 40 20 32 22" />
+        </g>
+        <ellipse cx="30" cy="22" rx="1.6" ry="6" fill="#c9688f" stroke="none" />
+        <path d="M29 16 C27 12 25 11 24 10 M31 16 C33 12 35 11 36 10" />
+    </svg>
+
+    <div class="bloom-cta" id="bloomCta">
+        <div class="bloom-kicker">From a seed to a story.</div>
+        <a class="btn-bloom" asp-controller="Identify" asp-action="Index">Identify a flower&nbsp;<span class="arr">&rarr;</span></a>
+    </div>
+
+    <div class="hero-hint" id="heroHint">Scroll to grow</div>
+</section>
+
+@* ---------- Species marquee ---------- *@
+<div class="species-marquee" aria-hidden="true">
+    <div class="marquee-track">
+        <span>Rose</span><i>&middot;</i><span>Peony</span><i>&middot;</i><span>Cosmos</span><i>&middot;</i><span>Lavender</span><i>&middot;</i><span>Tulip</span><i>&middot;</i><span>Orchid</span><i>&middot;</i><span>Dahlia</span><i>&middot;</i><span>Sunflower</span><i>&middot;</i><span>Magnolia</span><i>&middot;</i><span>Jasmine</span><i>&middot;</i><span>Iris</span><i>&middot;</i><span>Camellia</span><i>&middot;</i>
+        <span>Rose</span><i>&middot;</i><span>Peony</span><i>&middot;</i><span>Cosmos</span><i>&middot;</i><span>Lavender</span><i>&middot;</i><span>Tulip</span><i>&middot;</i><span>Orchid</span><i>&middot;</i><span>Dahlia</span><i>&middot;</i><span>Sunflower</span><i>&middot;</i><span>Magnolia</span><i>&middot;</i><span>Jasmine</span><i>&middot;</i><span>Iris</span><i>&middot;</i><span>Camellia</span><i>&middot;</i>
+    </div>
+</div>
+
+@* ---------- Features ---------- *@
+<section class="features" id="features">
+    <div class="section-kicker reveal">How it works</div>
+    <h2 class="reveal">Helping your garden thrive</h2>
+    <div class="feature-grid">
+        <div class="feature-card reveal">
+            <div class="icon-ring">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                </svg>
+            </div>
+            <span class="step-no">01</span>
+            <h3>Identify in a snap</h3>
+            <p>Point your camera at any bloom and get its name in seconds &mdash; no botany degree required.</p>
+        </div>
+        <div class="feature-card reveal">
+            <div class="icon-ring">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22 V10" />
+                    <path d="M12 12 C12 8 8 5 4 5 C4 9 8 12 12 12 Z" />
+                    <path d="M12 10 C12 6 16 3 20 3 C20 7 16 10 12 10 Z" />
+                </svg>
+            </div>
+            <span class="step-no">02</span>
+            <h3>Grow with confidence</h3>
+            <p>Light, water, soil and season &mdash; clear care guides tailored to each flower you find.</p>
+        </div>
+        <div class="feature-card reveal">
+            <div class="icon-ring">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+            </div>
+            <span class="step-no">03</span>
+            <h3>Uncover the story</h3>
+            <p>The folklore, meaning and history behind every species &mdash; because flowers carry stories.</p>
+        </div>
+    </div>
+</section>
+
+@* ---------- In bloom right now ---------- *@
+@if (blooming.Count > 0)
+{
+    <section class="blooming" id="blooming">
+        <div class="section-kicker reveal">In bloom right now</div>
+        <h2 class="reveal">@season.Label() flowers at their best</h2>
+        <div class="bloom-wrap reveal">
+            <button class="bloom-arrow prev" id="bloomPrev" type="button" aria-label="Scroll back">&larr;</button>
+            <div class="bloom-row" id="bloomRow">
+                @foreach (var f in blooming)
+                {
+                    <a class="flower-card" asp-controller="Flowers" asp-action="Details" asp-route-id="@f.Id">
+                        @if (!string.IsNullOrWhiteSpace(f.ImagePath))
+                        {
+                            <div class="photo-frame">
+                                <img class="card-photo" src="@f.ImagePath" alt="@f.CommonName" loading="lazy" />
+                                <span class="view-hint">View &rarr;</span>
+                            </div>
+                        }
+                        <h3>@f.CommonName</h3>
+                        <div class="sci">@f.ScientificName</div>
+                    </a>
+                }
+            </div>
+            <button class="bloom-arrow next" id="bloomNext" type="button" aria-label="Scroll forward">&rarr;</button>
+        </div>
+        <div class="browse-all reveal">
+            <a class="btn-ghost" asp-controller="Flowers" asp-action="Index">Browse the whole catalog</a>
+        </div>
+    </section>
+}
+
+@* ---------- This month in the garden ---------- *@
+@if (monthTasks.Count > 0)
+{
+    <section class="month-garden" id="thisMonth">
+        <div class="section-kicker reveal">The gardener's month</div>
+        <h2 class="reveal">@monthName in the garden</h2>
+        <p class="month-lede reveal">What your flowers are asking for right now &mdash; straight from our growing guides.</p>
+        <div class="task-grid">
+            @foreach (var t in monthTasks)
+            {
+                <a class="task-row reveal" asp-controller="Flowers" asp-action="Details" asp-route-id="@t.Flower.Id">
+                    @if (!string.IsNullOrWhiteSpace(t.Flower.ImagePath))
+                    {
+                        <img class="task-thumb" src="@t.Flower.ImagePath" alt="" loading="lazy" />
+                    }
+                    <div class="task-copy">
+                        <div class="task-name">@t.Flower.CommonName</div>
+                        <div class="task-what">@t.Task</div>
+                    </div>
+                    <span class="task-arr" aria-hidden="true">&rarr;</span>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+@* ---------- Closing ---------- *@
+<section class="closing">
+    <svg class="sprig reveal" viewBox="0 0 60 40" fill="none" stroke="#c9688f" stroke-width="1.6" stroke-linecap="round">
+        <path d="M30 38 C30 24 30 14 30 6" />
+        <path d="M30 20 C24 16 18 15 13 17 C17 23 24 24 30 22" />
+        <path d="M30 14 C36 10 42 9 47 11 C43 17 36 18 30 16" />
+        <circle cx="30" cy="5" r="3" />
+    </svg>
+    <h2 class="reveal">Bring a little more bloom into your day.</h2>
+    <a class="btn-bloom reveal" asp-controller="Identify" asp-action="Index">Start identifying&nbsp;<span class="arr">&rarr;</span></a>
+</section>
+
+@section Scripts {
+    <script src="~/lib/gsap/gsap.min.js"></script>
+    <script src="~/lib/gsap/ScrollTrigger.min.js"></script>
+    <script src="~/js/home.js" asp-append-version="true"></script>
+}

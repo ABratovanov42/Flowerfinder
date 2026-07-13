@@ -1,0 +1,347 @@
+@model Flower
+@{
+    ViewData["Title"] = Model.CommonName;
+    var related = ViewData["Related"] as List<Flower> ?? new List<Flower>();
+
+    // ----- parse the in-depth guide fields (see Flower.cs for formats) -----
+    List<string[]> Rows(string? raw, int parts) => (raw ?? "")
+        .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(l => l.Split('|', parts))
+        .Where(p => p.Length == parts)
+        .ToList();
+
+    var sections = new List<(string Title, List<string> Lines)>();
+    foreach (var line in (Model.GuideSections ?? "").Split('\n', StringSplitOptions.TrimEntries))
+    {
+        if (line.StartsWith("## "))
+            sections.Add((line[3..], new List<string>()));
+        else if (line.Length > 0 && sections.Count > 0)
+            sections[^1].Lines.Add(line);
+    }
+
+    var calendar = Rows(Model.CareCalendar, 2);
+    var problems = Rows(Model.Problems, 3);
+    var faqs = Rows(Model.Faqs, 2);
+    var gear = Rows(Model.GearList, 2);
+
+    var hasGuide = sections.Count > 0 || calendar.Count > 0 || problems.Count > 0 || faqs.Count > 0 || gear.Count > 0;
+    var thisMonth = DateTime.Now.ToString("MMM");
+    var secNo = 0;
+
+    // little line-art icon per guide section, picked by title keywords
+    string IconFor(string title)
+    {
+        var t = title.ToLowerInvariant();
+        return
+            t.Contains("water") || t.Contains("feed")
+                ? "<path d='M12 3.5c3 4 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.5-6 5.5-10z'/>"
+          : t.Contains("prun") || t.Contains("deadhead") || t.Contains("vase") || t.Contains("cutting") || t.Contains("harvest")
+                ? "<circle cx='6.5' cy='17.5' r='2.3'/><circle cx='17.5' cy='17.5' r='2.3'/><path d='M8.3 15.6 19 4.5M15.7 15.6 5 4.5'/>"
+          : t.Contains("winter") || t.Contains("frost") || t.Contains("storage")
+                ? "<path d='M12 3v18M5 6.8l14 10.4M19 6.8 5 17.2'/>"
+          : t.Contains("light") || t.Contains("placement") || t.Contains("sun")
+                ? "<circle cx='12' cy='12' r='4'/><path d='M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M18 6l-1.4 1.4M7.4 16.6 6 18'/>"
+          : t.Contains("plant") || t.Contains("sow") || t.Contains("bulb") || t.Contains("tuber")
+                ? "<path d='M12 15.5c-2.8 0-4.5-1.8-4.5-4.2 0-2.6 1.8-5.4 4.5-7.3 2.7 1.9 4.5 4.7 4.5 7.3 0 2.4-1.7 4.2-4.5 4.2z'/><path d='M12 15.5V21M9 21h6'/>"
+          : t.Contains("soil") || t.Contains("site")
+                ? "<path d='M4 20h16'/><path d='M12 20v-7'/><path d='M12 13c0-3-2-5-5-5 0 3 2 5 5 5z'/><path d='M12 11c0-3 2-5 5-5 0 3-2 5-5 5z'/>"
+          : "<path d='M12 20V7'/><path d='M12 13c-2.5-1.5-5-1.5-6.5-.5 1.5 2.5 4.5 3 6.5 1.5z'/><path d='M12 10c2.5-1.5 5-1.5 6.5-.5-1.5 2.5-4.5 3-6.5 1.5z'/><circle cx='12' cy='5' r='2'/>";
+    }
+}
+
+<div class="mini-bar" id="miniBar">
+    <span class="mini-name">@Model.CommonName</span>
+    <a class="mini-cta" asp-action="Index">Catalog &rarr;</a>
+</div>
+
+<div class="flower-detail">
+    <a class="back" asp-action="Index">&larr; Back to the catalog</a>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+    {
+        @* cinematic hero: the photo carries the title on a soft scrim *@
+        <div class="cine-hero">
+            <img class="detail-photo" src="@Model.ImagePath" alt="@Model.CommonName" />
+            <div class="cine-scrim" aria-hidden="true"></div>
+            <div class="cine-copy">
+                <h1>@Model.CommonName</h1>
+                <div class="sci-line">
+                    @Model.ScientificName
+                    @if (!string.IsNullOrWhiteSpace(Model.Family))
+                    {
+                        <text>&middot; @Model.Family</text>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h1>@Model.CommonName</h1>
+        <div class="sci-line">
+            @Model.ScientificName
+            @if (!string.IsNullOrWhiteSpace(Model.Family))
+            {
+                <text>&middot; @Model.Family</text>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.Colors))
+    {
+        <div class="swatches mb-4">
+            @foreach (var c in Model.Colors.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                <i style="background:@CareLabels.Hex(c)" title="@c"></i>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.Description))
+    {
+        <p class="story">@Model.Description</p>
+    }
+
+    <div class="facts-grid">
+        <div class="fact">
+            <div class="label">Sunlight</div>
+            <div class="value">@Model.Sunlight.Label()</div>
+        </div>
+        <div class="fact">
+            <div class="label">Watering</div>
+            <div class="value">@Model.Watering.Label()</div>
+        </div>
+        <div class="fact">
+            <div class="label">Blooms in</div>
+            <div class="value">@Model.BloomSeason.Label()</div>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Model.SoilType))
+        {
+            <div class="fact">
+                <div class="label">Soil</div>
+                <div class="value">@Model.SoilType</div>
+            </div>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.NativeRegion))
+        {
+            <div class="fact">
+                <div class="label">Native to</div>
+                <div class="value">@Model.NativeRegion</div>
+            </div>
+        }
+        <div class="fact">
+            <div class="label">Type</div>
+            <div class="value">@(Model.IsPerennial ? "Perennial — returns each year" : "Annual — replant each year")</div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.CareGuide))
+    {
+        <h2>How to help it flourish</h2>
+        <p class="story">@Model.CareGuide</p>
+    }
+
+    @{
+        // growing plan: one step per line, "timeframe|title|instructions"
+        var growSteps = (Model.GrowingPlan ?? "")
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(l => l.Split('|', 3))
+            .Where(p => p.Length == 3)
+            .ToList();
+    }
+    @if (growSteps.Count > 0)
+    {
+        <h2>How to grow it, step by step</h2>
+        <div class="grow-timeline">
+            @for (var s = 0; s < growSteps.Count; s++)
+            {
+                <div class="grow-step">
+                    <div class="grow-node">@(s + 1)</div>
+                    <div class="grow-body">
+                        <div class="grow-when">@growSteps[s][0]</div>
+                        <h3>@growSteps[s][1]</h3>
+                        <p>@growSteps[s][2]</p>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (hasGuide)
+    {
+        <div class="guide-wrap">
+            <div class="guide-head">
+                <div class="guide-kicker">The Flowerfinder guide</div>
+                <h2 class="guide-title">Growing @Model.CommonName, properly</h2>
+                <p class="guide-lede">Everything below is the proven, no-myths version &mdash; what actually keeps a @Model.CommonName.ToLower() thriving, season after season.</p>
+            </div>
+
+            <div class="guide-grid">
+                <nav class="guide-toc" id="guideToc" aria-label="Guide contents">
+                    <div class="toc-label">In this guide</div>
+                    @{ var tocNo = 0; }
+                    @foreach (var s in sections)
+                    {
+                        <a href="#gs-@tocNo">@s.Title</a>
+                        tocNo++;
+                    }
+                    @if (calendar.Count > 0) { <a href="#g-calendar">A year of care</a> }
+                    @if (problems.Count > 0) { <a href="#g-problems">When things go wrong</a> }
+                    @if (gear.Count > 0)     { <a href="#g-gear">What you'll need</a> }
+                    @if (faqs.Count > 0)     { <a href="#g-faqs">Questions people ask</a> }
+                </nav>
+
+                <div class="guide-main">
+                    @foreach (var s in sections)
+                    {
+                        <section class="g-sec" id="gs-@secNo">
+                            <h3>
+                                <span class="sec-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#c9688f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">@Html.Raw(IconFor(s.Title))</svg></span>
+                                <span class="sec-no">@((secNo + 1).ToString("00"))</span>@s.Title
+                            </h3>
+                            @{
+                                var bullets = new List<string>();
+                                void FlushList()
+                                {
+                                    if (bullets.Count == 0) { return; }
+                                    <ul class="g-list">
+                                        @foreach (var b in bullets) { <li>@b</li> }
+                                    </ul>
+                                    bullets.Clear();
+                                }
+                            }
+                            @foreach (var line in s.Lines)
+                            {
+                                if (line.StartsWith("- ")) { bullets.Add(line[2..]); }
+                                else
+                                {
+                                    FlushList();
+                                    if (line.StartsWith("TIP:"))
+                                    {
+                                        <div class="callout tip"><span class="co-tag">Pro tip</span>@line[4..].Trim()</div>
+                                    }
+                                    else if (line.StartsWith("WARN:"))
+                                    {
+                                        <div class="callout warn"><span class="co-tag">Watch out</span>@line[5..].Trim()</div>
+                                    }
+                                    else
+                                    {
+                                        <p>@line</p>
+                                    }
+                                }
+                            }
+                            @{ FlushList(); }
+                        </section>
+                        secNo++;
+                    }
+
+                    @if (calendar.Count > 0)
+                    {
+                        <section class="g-sec" id="g-calendar">
+                            <h3>
+                                <span class="sec-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#c9688f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg></span>
+                                <span class="sec-no">@((++secNo).ToString("00"))</span>A year of care
+                            </h3>
+                            <p class="cal-hint">Scroll through the year &mdash; this month is glowing.</p>
+                            <div class="cal-strip">
+                                @foreach (var m in calendar)
+                                {
+                                    <div class="month @(m[0].Equals(thisMonth, StringComparison.OrdinalIgnoreCase) ? "now" : null)">
+                                        <div class="m-name">@m[0]</div>
+                                        <div class="m-do">@m[1]</div>
+                                    </div>
+                                }
+                            </div>
+                        </section>
+                    }
+
+                    @if (problems.Count > 0)
+                    {
+                        <section class="g-sec" id="g-problems">
+                            <h3>
+                                <span class="sec-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#c9688f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v5M12 16.2v.3"/></svg></span>
+                                <span class="sec-no">@((++secNo).ToString("00"))</span>When things go wrong
+                            </h3>
+                            <div class="prob-grid">
+                                @foreach (var p in problems)
+                                {
+                                    <div class="prob-card">
+                                        <h4>@p[0]</h4>
+                                        <div class="prob-see"><span>What you'll see</span>@p[1]</div>
+                                        <div class="prob-fix"><span>The fix</span>@p[2]</div>
+                                    </div>
+                                }
+                            </div>
+                        </section>
+                    }
+
+                    @if (gear.Count > 0)
+                    {
+                        <section class="g-sec" id="g-gear">
+                            <h3>
+                                <span class="sec-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#c9688f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1.6 10.5H5.6z"/><path d="M8.5 9a3.5 3.5 0 0 1 7 0"/></svg></span>
+                                <span class="sec-no">@((++secNo).ToString("00"))</span>What you'll need
+                            </h3>
+                            <ul class="gear-list">
+                                @foreach (var g in gear)
+                                {
+                                    <li><strong>@g[0]</strong><span>@g[1]</span></li>
+                                }
+                            </ul>
+                        </section>
+                    }
+
+                    @if (faqs.Count > 0)
+                    {
+                        <section class="g-sec" id="g-faqs">
+                            <h3>
+                                <span class="sec-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#c9688f" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 21l1.9-5.1A8.5 8.5 0 1 1 21 11.5z"/></svg></span>
+                                <span class="sec-no">@((++secNo).ToString("00"))</span>Questions people ask
+                            </h3>
+                            @foreach (var f in faqs)
+                            {
+                                <details class="faq">
+                                    <summary>@f[0]</summary>
+                                    <p>@f[1]</p>
+                                </details>
+                            }
+                        </section>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (related.Count > 0)
+    {
+        <div class="related">
+            <h2>More like this</h2>
+            <div class="related-grid">
+                @foreach (var r in related)
+                {
+                    <a class="flower-card" asp-action="Details" asp-route-id="@r.Id">
+                        @if (!string.IsNullOrWhiteSpace(r.ImagePath))
+                        {
+                            <div class="photo-frame">
+                                <img class="card-photo" src="@r.ImagePath" alt="@r.CommonName" loading="lazy" />
+                                <span class="view-hint">View &rarr;</span>
+                            </div>
+                        }
+                        <h3>@r.CommonName</h3>
+                        <div class="sci">@r.ScientificName</div>
+                        <span class="chip">@r.BloomSeason.Label()</span>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="detail-admin">
+        <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/detail.js" asp-append-version="true"></script>
+}

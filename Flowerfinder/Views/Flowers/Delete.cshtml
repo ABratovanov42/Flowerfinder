@@ -1,0 +1,16 @@
+@model Flower
+@{
+    ViewData["Title"] = $"Remove {Model.CommonName}";
+}
+
+<div class="flower-form">
+    <h1>Remove @Model.CommonName?</h1>
+    <p style="font-family:'Inter','Segoe UI',sans-serif;color:#55504a;">
+        This takes <em>@Model.CommonName</em> (@Model.ScientificName) out of the catalog permanently.
+    </p>
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn-save" style="background:linear-gradient(135deg,#d9534f,#b52b27);">Yes, remove it</button>
+        <a class="btn-cancel" asp-action="Details" asp-route-id="@Model.Id">Keep it</a>
+    </form>
+</div>

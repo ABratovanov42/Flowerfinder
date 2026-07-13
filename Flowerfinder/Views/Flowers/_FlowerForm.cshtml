@@ -1,0 +1,120 @@
+@model Flower
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="DateAdded" />
+<input type="hidden" asp-for="ImagePath" />
+
+<div class="mb-3">
+    <label asp-for="CommonName">Common name</label>
+    <input asp-for="CommonName" class="form-control" placeholder="e.g. Sunflower" />
+    <span asp-validation-for="CommonName" class="text-danger"></span>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="ScientificName">Scientific name</label>
+        <input asp-for="ScientificName" class="form-control" placeholder="e.g. Helianthus annuus" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="Family">Family</label>
+        <input asp-for="Family" class="form-control" placeholder="e.g. Asteraceae" />
+    </div>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Description">The story</label>
+    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Folklore, meaning, history&hellip;"></textarea>
+</div>
+
+<div class="mb-3">
+    <label asp-for="CareGuide">Care guide</label>
+    <textarea asp-for="CareGuide" class="form-control" rows="3" placeholder="How to help it flourish&hellip;"></textarea>
+</div>
+
+<div class="mb-3">
+    <label asp-for="GrowingPlan">Growing plan (one step per line: timeframe|title|instructions)</label>
+    <textarea asp-for="GrowingPlan" class="form-control" rows="7"
+              placeholder="Day 1|Sow the seeds|Push each seed 2 cm deep into moist compost&hellip;&#10;Weeks 1-2|Germination|Keep at 18&deg;C and never let the tray dry out&hellip;"></textarea>
+</div>
+
+<details class="mb-3">
+    <summary style="cursor:pointer; font-weight:600; font-size:0.9rem;">In-depth guide (optional &mdash; powers the full guide on the flower's page)</summary>
+    <div class="mt-3">
+        <div class="mb-3">
+            <label asp-for="GuideSections">Guide sections (&quot;## Title&quot; starts a section; &quot;- &quot; bullets; &quot;TIP:&quot; / &quot;WARN:&quot; callouts)</label>
+            <textarea asp-for="GuideSections" class="form-control" rows="10"
+                      placeholder="## Soil &amp; site&#10;Full sun and good drainage&hellip;&#10;- Bullet point&#10;TIP: A pro tip callout&#10;WARN: A warning callout"></textarea>
+        </div>
+        <div class="mb-3">
+            <label asp-for="CareCalendar">Year of care (12 lines: Month|what to do)</label>
+            <textarea asp-for="CareCalendar" class="form-control" rows="6" placeholder="Jan|Rest&hellip;&#10;Feb|Prune&hellip;"></textarea>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Problems">Problems (one per line: Problem|What you'll see|The fix)</label>
+            <textarea asp-for="Problems" class="form-control" rows="4" placeholder="Aphids|Sticky curled tips|Blast off with water&hellip;"></textarea>
+        </div>
+        <div class="mb-3">
+            <label asp-for="GearList">What you'll need (one per line: Item|Why)</label>
+            <textarea asp-for="GearList" class="form-control" rows="4" placeholder="Secateurs|Clean cuts heal fast"></textarea>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Faqs">FAQs (one per line: Question?|Answer)</label>
+            <textarea asp-for="Faqs" class="form-control" rows="4" placeholder="How long do they live?|Decades with annual pruning."></textarea>
+        </div>
+    </div>
+</details>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label asp-for="Sunlight">Sunlight</label>
+        <select asp-for="Sunlight" class="form-select">
+            @foreach (Sunlight s in Enum.GetValues<Sunlight>())
+            {
+                <option value="@s">@s.Label()</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="Watering">Watering</label>
+        <select asp-for="Watering" class="form-select">
+            @foreach (Watering w in Enum.GetValues<Watering>())
+            {
+                <option value="@w">@w.Label()</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="BloomSeason">Blooms in</label>
+        <select asp-for="BloomSeason" class="form-select">
+            @foreach (BloomSeason b in Enum.GetValues<BloomSeason>())
+            {
+                <option value="@b">@b.Label()</option>
+            }
+        </select>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="Colors">Colours (comma-separated)</label>
+        <input asp-for="Colors" class="form-control" placeholder="e.g. Pink, White" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <label asp-for="SoilType">Soil</label>
+        <input asp-for="SoilType" class="form-control" placeholder="e.g. Well-drained loam" />
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="NativeRegion">Native region</label>
+        <input asp-for="NativeRegion" class="form-control" placeholder="e.g. Central Asia" />
+    </div>
+    <div class="col-md-6 mb-3 d-flex align-items-end">
+        <div class="form-check">
+            <input asp-for="IsPerennial" class="form-check-input" />
+            <label asp-for="IsPerennial" class="form-check-label">Perennial (returns every year)</label>
+        </div>
+    </div>
+</div>

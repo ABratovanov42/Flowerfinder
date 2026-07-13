@@ -1,0 +1,15 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio machine-specific files
+.vs/
+*.user
+
+# Local database — recreated and reseeded automatically on first run
+*.db
+*.db-shm
+*.db-wal
+
+# Machine-local secrets (real PlantNet API key lives here)
+appsettings.Local.json

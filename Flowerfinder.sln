@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36811.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flowerfinder", "Flowerfinder\Flowerfinder.csproj", "{E97AAA92-1DF5-4529-B6AA-B82AF11BF105}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E97AAA92-1DF5-4529-B6AA-B82AF11BF105}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E97AAA92-1DF5-4529-B6AA-B82AF11BF105}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E97AAA92-1DF5-4529-B6AA-B82AF11BF105}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E97AAA92-1DF5-4529-B6AA-B82AF11BF105}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B3282DD0-BF40-4D78-B3DA-82E14780B9A7}
+	EndGlobalSection
+EndGlobal
