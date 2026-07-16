@@ -15,4 +15,4 @@ obj/
 appsettings.Local.json
 
 # Uploaded photos — they belong to this machine's database
-wwwroot/images/uploads/
+**/wwwroot/images/uploads/
