@@ -59,9 +59,28 @@
     if (!grid || !searchBox) return;
     const cards = Array.from(grid.querySelectorAll(".flower-card"));
 
+    // The grid only holds one page of the catalog, so name-matching just the
+    // visible cards can lie ("no flowers matched" for a flower on page 3).
+    // Fetch the full name list once and count matches across everything.
+    let all = null, allReq = null;
+    const loadAll = () => allReq ??= fetch("/Flowers/SearchData")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+            all = d;
+            applyFilter(searchBox.value.trim().toLowerCase());
+        })
+        .catch(() => { });
+
+    // "Show all N matches" link for results that live on other pages
+    const more = document.createElement("a");
+    more.className = "cat-more";
+    more.hidden = true;
+    countLine?.after(more);
+
     let debounce;
     searchBox.addEventListener("input", () => {
         clearTimeout(debounce);
+        loadAll();
         debounce = setTimeout(() => applyFilter(searchBox.value.trim().toLowerCase()), 90);
     });
 
@@ -91,9 +110,28 @@
             }
         });
 
-        setCount(shown, (shown === 1 ? "flower" : "flowers") + (term ? " found" : " in the catalog"));
-        if (emptyBox) emptyBox.hidden = shown !== 0;
+        // true count across the whole catalog (falls back to this page's count
+        // until the name list arrives)
+        let total = shown;
+        if (all) {
+            total = term
+                ? all.filter((f) =>
+                    (f.name || "").toLowerCase().includes(term) ||
+                    (f.sci || "").toLowerCase().includes(term)).length
+                : all.length;
+        }
+
+        setCount(total, (total === 1 ? "flower" : "flowers") + (term ? " found" : " in the catalog"));
+        if (emptyBox) emptyBox.hidden = total !== 0;
         if (shown === 0) grid.style.display = "none";
+
+        if (term && total > shown) {
+            more.href = "/Flowers?q=" + encodeURIComponent(term);
+            more.textContent = "Show all " + total + (total === 1 ? " match" : " matches") + " →";
+            more.hidden = false;
+        } else {
+            more.hidden = true;
+        }
 
         if (reduce || shown === 0) return;
 

@@ -171,6 +171,10 @@
                 {
                     <span class="chip">Perennial</span>
                 }
+                @if (f.IsInGarden)
+                {
+                    <span class="chip chip-garden">&#127793; Yours</span>
+                }
             </a>
             i++;
         }

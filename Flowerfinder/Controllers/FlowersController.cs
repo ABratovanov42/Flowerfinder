@@ -1,5 +1,6 @@
 using Flowerfinder.Data;
 using Flowerfinder.Models;
+using Flowerfinder.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +9,12 @@ namespace Flowerfinder.Controllers
     public class FlowersController : Controller
     {
         private readonly AppDbContext _db;
+        private readonly PhotoStorage _photos;
 
-        public FlowersController(AppDbContext db)
+        public FlowersController(AppDbContext db, PhotoStorage photos)
         {
             _db = db;
+            _photos = photos;
         }
 
         private const int PageSize = 12;
@@ -117,15 +120,43 @@ namespace Flowerfinder.Controllers
             return View(flower);
         }
 
+        // POST /Flowers/ToggleGarden/5 — add or remove a flower from "my garden"
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleGarden(int id)
+        {
+            var flower = await _db.Flowers.FindAsync(id);
+            if (flower == null) return NotFound();
+            flower.IsInGarden = !flower.IsInGarden;
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
         // ----- Admin actions (no login yet — protect these when accounts arrive) -----
 
-        // GET /Flowers/Create
-        public IActionResult Create() => View(new Flower());
+        // GET /Flowers/Create — optionally pre-filled from a saved identification
+        public async Task<IActionResult> Create(int? fromRecord, string? sci, string? common)
+        {
+            var flower = new Flower();
+            if (fromRecord.HasValue)
+            {
+                var rec = await _db.IdentifyRecords.FindAsync(fromRecord.Value);
+                if (rec != null)
+                {
+                    flower.ImagePath = rec.ImagePath;
+                    flower.ScientificName = sci ?? rec.TopScientificName;
+                    flower.CommonName = common ?? rec.TopCommonName ?? "";
+                }
+            }
+            return View(flower);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Flower flower)
+        [RequestSizeLimit(PhotoStorage.MaxBytes + 64 * 1024)]
+        public async Task<IActionResult> Create(Flower flower, IFormFile? photo)
         {
+            await ApplyUploadedPhotoAsync(flower, photo);
             if (!ModelState.IsValid) return View(flower);
             flower.DateAdded = DateTime.UtcNow;
             _db.Flowers.Add(flower);
@@ -143,13 +174,48 @@ namespace Flowerfinder.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Flower flower)
+        [RequestSizeLimit(PhotoStorage.MaxBytes + 64 * 1024)]
+        public async Task<IActionResult> Edit(int id, Flower flower, IFormFile? photo)
         {
             if (id != flower.Id) return NotFound();
+            await ApplyUploadedPhotoAsync(flower, photo);
             if (!ModelState.IsValid) return View(flower);
             _db.Update(flower);
             await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Details), new { id = flower.Id });
+        }
+
+        // Saves an uploaded photo onto the flower (replacing any previous
+        // upload); a bad file becomes a validation message on the form.
+        private async Task ApplyUploadedPhotoAsync(Flower flower, IFormFile? photo)
+        {
+            if (photo == null) return; // keeping the current picture
+
+            var problem = PhotoStorage.Problem(photo);
+            if (problem == null)
+            {
+                await using var stream = photo.OpenReadStream();
+                var saved = await _photos.SaveAsync(stream);
+                if (saved == null)
+                {
+                    problem = "That image couldn't be read — try exporting it again as JPEG or PNG.";
+                }
+                else
+                {
+                    await DeleteUnlessSharedAsync(flower.ImagePath);
+                    flower.ImagePath = saved;
+                }
+            }
+            if (problem != null) ModelState.AddModelError("photo", problem);
+        }
+
+        // A flower added from an identification shares that photo file with
+        // the history record — leave shared files alone.
+        private async Task DeleteUnlessSharedAsync(string? webPath)
+        {
+            if (string.IsNullOrWhiteSpace(webPath)) return;
+            if (await _db.IdentifyRecords.AnyAsync(r => r.ImagePath == webPath)) return;
+            _photos.Delete(webPath);
         }
 
         // GET /Flowers/Delete/5 — confirmation page
@@ -167,6 +233,7 @@ namespace Flowerfinder.Controllers
             var flower = await _db.Flowers.FindAsync(id);
             if (flower != null)
             {
+                await DeleteUnlessSharedAsync(flower.ImagePath); // uploads only; seed images stay
                 _db.Flowers.Remove(flower);
                 await _db.SaveChangesAsync();
             }

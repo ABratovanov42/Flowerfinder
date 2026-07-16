@@ -11,6 +11,24 @@
     <span asp-validation-for="CommonName" class="text-danger"></span>
 </div>
 
+<div class="mb-3 photo-field">
+    <label for="photo">Photo</label>
+    @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
+    {
+        <div class="photo-current">
+            <img src="@Model.ImagePath" alt="Current photo" />
+            <span>Current photo &mdash; choose a file to replace it</span>
+        </div>
+    }
+    <input type="file" id="photo" name="photo" class="form-control" accept="image/jpeg,image/png,image/webp" />
+    <div class="photo-hint">JPEG, PNG or WebP up to 10&nbsp;MB &mdash; it's resized automatically.</div>
+    @{ var photoError = ViewData.ModelState["photo"]?.Errors.FirstOrDefault()?.ErrorMessage; }
+    @if (photoError != null)
+    {
+        <span class="text-danger">@photoError</span>
+    }
+</div>
+
 <div class="row">
     <div class="col-md-6 mb-3">
         <label asp-for="ScientificName">Scientific name</label>

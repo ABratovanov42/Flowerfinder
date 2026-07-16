@@ -22,6 +22,30 @@
   --shadow-rgb: 130, 85, 60;       /* warm shadow tint */
 }
 
+/* ---------- Seasonal accents: the rose follows the real season.
+   Summer keeps the signature rose; the layout script stamps
+   data-season on <html> before first paint. ---------- */
+html[data-season="spring"] {
+  --rose: #b0508f;             /* peony magenta — fresh and floral */
+  --rose-rgb: 176, 80, 143;
+  --rose-light: #cf74ae;
+  --rose-light-rgb: 207, 116, 174;
+}
+
+html[data-season="autumn"] {
+  --rose: #bf6b3f;             /* chrysanthemum amber */
+  --rose-rgb: 191, 107, 63;
+  --rose-light: #d98c5d;
+  --rose-light-rgb: 217, 140, 93;
+}
+
+html[data-season="winter"] {
+  --rose: #7d6cb4;             /* iris violet */
+  --rose-rgb: 125, 108, 180;
+  --rose-light: #9d8ecc;
+  --rose-light-rgb: 157, 142, 204;
+}
+
 /* ---------- …and dusk. The rose glows a little brighter. ---------- */
 html.dark {
   color-scheme: dark;
@@ -39,6 +63,11 @@ html.dark {
   --card-rgb: 52, 42, 58;
   --shadow-rgb: 0, 0, 0;
 }
+
+/* seasonal accents glow brighter at dusk, like the base rose does */
+html.dark[data-season="spring"] { --rose: #cf74ae; --rose-rgb: 207, 116, 174; --rose-light: #e194c4; --rose-light-rgb: 225, 148, 196; }
+html.dark[data-season="autumn"] { --rose: #d98c5d; --rose-rgb: 217, 140, 93; --rose-light: #e8a97e; --rose-light-rgb: 232, 169, 126; }
+html.dark[data-season="winter"] { --rose: #9d8ecc; --rose-rgb: 157, 142, 204; --rose-light: #b5a8dd; --rose-light-rgb: 181, 168, 221; }
 
 /* dusk fine-tuning: light hairlines instead of white card borders */
 html.dark .flower-card,
@@ -1023,6 +1052,170 @@ footer.ff-foot .foot-fine {
   box-shadow: 0 0 0 3px rgba(var(--rose-rgb), 0.22);
 }
 
+/* ---- photo upload field on the flower form ---- */
+.photo-current {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+.photo-current img {
+  width: 92px;
+  height: 69px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--ink-rgb), 0.15);
+}
+
+.photo-current span,
+.photo-hint {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+
+.photo-hint { margin-top: 0.35rem; }
+
+/* ---- "my garden" toggle on the detail page ---- */
+.garden-row {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.garden-btn {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: rgba(var(--card-rgb), 0.8);
+  border: 1px solid rgba(var(--ink-rgb), 0.16);
+  border-radius: 999px;
+  padding: 0.42rem 1.1rem;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.garden-btn:hover {
+  border-color: rgba(var(--rose-rgb), 0.55);
+  transform: translateY(-1px);
+}
+
+.garden-btn.in {
+  color: #3f6f34;
+  background: rgba(126, 168, 92, 0.14);
+  border-color: rgba(126, 168, 92, 0.45);
+}
+
+html.dark .garden-btn.in { color: #a4c88a; }
+
+.garden-btn .garden-off { margin-left: 0.4rem; opacity: 0.6; }
+
+.chip.chip-garden {
+  color: #3f6f34;
+  background: rgba(126, 168, 92, 0.16);
+}
+
+html.dark .chip.chip-garden { color: #a4c88a; }
+
+/* ---- identify history ("past finds") ---- */
+.hist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.3rem;
+  max-width: 1060px;
+  margin: 0 auto 3rem;
+}
+
+.hist-card {
+  background: rgba(var(--card-rgb), 0.72);
+  border: 1px solid rgba(var(--card-rgb), 0.7);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 32px rgba(var(--shadow-rgb), 0.08);
+}
+
+html.dark .hist-card { border-color: rgba(255, 255, 255, 0.07); }
+
+.hist-photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.hist-body {
+  padding: 1rem 1.2rem 1.2rem;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.hist-date {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.35rem;
+}
+
+.hist-name {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 550;
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.hist-sci {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+
+.hist-score {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 0.35rem 0 0.55rem;
+}
+
+/* ---- lightbox ---- */
+img.lightboxable { cursor: zoom-in; }
+
+.lb-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 12, 18, 0.86);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: zoom-out;
+  padding: 3vh 3vw;
+}
+
+.lb-veil img {
+  max-width: 94vw;
+  max-height: 94vh;
+  border-radius: 14px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+}
+
+/* link under the count when search matches live on other pages */
+.cat-more {
+  display: block;
+  text-align: center;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--rose);
+  text-decoration: none;
+  margin: 0.4rem auto 0.8rem;
+}
+
+.cat-more:hover { text-decoration: underline; }
+
 /* ---- flower cursor (nav toggle saves the choice; class set before first paint) ---- */
 html.flower-cursor body {
   cursor: url("../images/cursor-flower.svg") 13 13, auto;
@@ -1094,6 +1287,11 @@ html.flower-cursor textarea {
   color: var(--ink-faint);
   white-space: nowrap;
   width: 1%;
+  /* stays visible while the table scrolls sideways on narrow screens */
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: rgb(var(--card-rgb));
 }
 
 .cmp-head {

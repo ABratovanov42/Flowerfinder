@@ -39,11 +39,14 @@ namespace Flowerfinder.Controllers
             ViewData["Blooming"] = blooming;
 
             // "This month in the garden" — pull the current month's task out
-            // of every in-depth guide's care calendar (format: "Jul|task")
+            // of the care calendars (format: "Jul|task"). Once the user has
+            // marked flowers as theirs, only their garden speaks here.
             var monthKey = DateTime.Now.ToString("MMM");
+            var hasGarden = await _db.Flowers.AnyAsync(f => f.IsInGarden);
             var withCalendars = await _db.Flowers
-                .Where(f => f.CareCalendar != null)
+                .Where(f => f.CareCalendar != null && (!hasGarden || f.IsInGarden))
                 .ToListAsync();
+            ViewData["HasGarden"] = hasGarden;
             var monthTasks = withCalendars
                 .Select(f => new
                 {

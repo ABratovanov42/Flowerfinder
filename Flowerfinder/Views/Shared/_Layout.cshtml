@@ -29,6 +29,15 @@
                 document.documentElement.classList.add("flower-cursor");
             }
         } catch (e) { }
+        // seasonal accent: the site's rose tint follows the real season
+        // (see the [data-season] blocks in site.css)
+        try {
+            var ffMonth = new Date().getMonth() + 1;
+            document.documentElement.dataset.season =
+                ffMonth >= 3 && ffMonth <= 5 ? "spring" :
+                ffMonth >= 6 && ffMonth <= 8 ? "summer" :
+                ffMonth >= 9 && ffMonth <= 11 ? "autumn" : "winter";
+        } catch (e) { }
         // first visit this session: show the blooming loader (skipped for reduced motion)
         try {
             if (!sessionStorage.getItem("ffSeen") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -178,6 +187,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/nav.js" asp-append-version="true"></script>
     <script src="~/js/cursor.js" asp-append-version="true"></script>
+    <script src="~/js/lightbox.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

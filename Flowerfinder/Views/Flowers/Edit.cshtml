@@ -5,7 +5,7 @@
 
 <div class="flower-form">
     <h1>Edit @Model.CommonName</h1>
-    <form asp-action="Edit" method="post">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
         <partial name="_FlowerForm" model="Model" />
         <button type="submit" class="btn-save">Save changes</button>
         <a class="btn-cancel" asp-action="Details" asp-route-id="@Model.Id">Cancel</a>

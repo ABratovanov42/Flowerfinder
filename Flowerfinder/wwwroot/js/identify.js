@@ -114,8 +114,23 @@
                     '<div class="id-catalog-lead">It\'s in our catalog &mdash; the story, care and growing plan are waiting:</div>');
                 results.appendChild(matchCard(best.match));
             } else {
-                results.insertAdjacentHTML("beforeend",
-                    '<div class="id-catalog-lead">Not in our catalog yet &mdash; <a href="/Flowers/Create">be the one to add it</a>.</div>');
+                // "Add to my catalog": the saved find carries the photo, the
+                // query carries the names — the Create form arrives pre-filled
+                var addUrl = "/Flowers/Create";
+                if (payload.record) {
+                    addUrl += "?fromRecord=" + payload.record +
+                        "&sci=" + encodeURIComponent(best.sci || "") +
+                        (best.common ? "&common=" + encodeURIComponent(best.common) : "");
+                }
+                var lead = document.createElement("div");
+                lead.className = "id-catalog-lead";
+                lead.innerHTML = 'Not in our catalog yet &mdash; <a class="id-add-link"></a>';
+                var link = lead.querySelector(".id-add-link");
+                link.href = addUrl;
+                link.textContent = payload.record
+                    ? "add it with this photo →"
+                    : "be the one to add it";
+                results.appendChild(lead);
             }
 
             if (guesses.length > 1) {

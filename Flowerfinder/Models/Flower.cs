@@ -48,6 +48,8 @@ namespace Flowerfinder.Models
         public string? Colors { get; set; }       // comma-separated, e.g. "Pink, White"
         public string? NativeRegion { get; set; } // e.g. "Central Asia"
         public bool IsPerennial { get; set; }     // comes back every year vs replanted
+
+        public bool IsInGarden { get; set; }      // "My garden": flowers the user actually grows
     }
 
     public enum Sunlight { FullSun, PartialShade, Shade }

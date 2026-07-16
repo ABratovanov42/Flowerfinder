@@ -14,6 +14,9 @@ builder.Services.AddControllersWithViews();
 // Photo identification (PlantNet; see the PlantNet section in appsettings.json)
 builder.Services.AddHttpClient<PlantNetService>(c => c.Timeout = TimeSpan.FromSeconds(25));
 
+// Uploaded photo storage (resize + save under wwwroot/images/uploads)
+builder.Services.AddSingleton<PhotoStorage>();
+
 // SQLite database (a single portable file: flowerapp.db)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

@@ -13,3 +13,6 @@ obj/
 
 # Machine-local secrets (real PlantNet API key lives here)
 appsettings.Local.json
+
+# Uploaded photos — they belong to this machine's database
+wwwroot/images/uploads/

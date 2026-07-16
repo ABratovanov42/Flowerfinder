@@ -13,11 +13,13 @@ namespace Flowerfinder.Controllers
 
         private readonly AppDbContext _db;
         private readonly PlantNetService _plantNet;
+        private readonly PhotoStorage _photos;
 
-        public IdentifyController(AppDbContext db, PlantNetService plantNet)
+        public IdentifyController(AppDbContext db, PlantNetService plantNet, PhotoStorage photos)
         {
             _db = db;
             _plantNet = plantNet;
+            _photos = photos;
         }
 
         // GET /Identify — the drop-a-photo page
@@ -26,6 +28,23 @@ namespace Flowerfinder.Controllers
             ViewData["Configured"] = _plantNet.IsConfigured;
             ViewData["Demo"] = _plantNet.IsDemo;
             return View();
+        }
+
+        // GET /Identify/History — every photo identified so far, newest first
+        public async Task<IActionResult> History()
+        {
+            var records = await _db.IdentifyRecords
+                .OrderByDescending(r => r.DateTaken)
+                .Take(100)
+                .ToListAsync();
+
+            var matchedIds = records.Where(r => r.MatchedFlowerId != null)
+                .Select(r => r.MatchedFlowerId!.Value).Distinct().ToList();
+            ViewData["Matches"] = await _db.Flowers
+                .Where(f => matchedIds.Contains(f.Id))
+                .ToDictionaryAsync(f => f.Id);
+
+            return View(records);
         }
 
         // POST /Identify/Analyze — photo in, best guesses + catalog matches out
@@ -44,16 +63,22 @@ namespace Flowerfinder.Controllers
             if (!AllowedTypes.Contains(photo.ContentType, StringComparer.OrdinalIgnoreCase))
                 return BadRequest(new { error = "That doesn't look like a photo — JPEG, PNG or WebP, please." });
 
-            List<PlantGuess>? guesses;
-            await using (var stream = photo.OpenReadStream())
+            // buffer the photo so it can go to PlantNet AND be saved for
+            // history (each gets its own stream — PlantNet closes the one
+            // it is handed when the request is disposed)
+            byte[] bytes;
+            using (var buffer = new MemoryStream())
             {
-                guesses = await _plantNet.IdentifyAsync(stream, photo.FileName, photo.ContentType, ct);
+                await photo.CopyToAsync(buffer, ct);
+                bytes = buffer.ToArray();
             }
+
+            var guesses = await _plantNet.IdentifyAsync(new MemoryStream(bytes), photo.FileName, photo.ContentType, ct);
 
             if (guesses == null)
                 return StatusCode(502, new { error = "The identification service didn't answer — try again in a moment." });
             if (guesses.Count == 0)
-                return Ok(new { demo = _plantNet.IsDemo, guesses = Array.Empty<object>() });
+                return Ok(new { demo = _plantNet.IsDemo, guesses = Array.Empty<object>(), record = (int?)null });
 
             // pair each guess with our own catalog where we can
             var flowers = await _db.Flowers.ToListAsync(ct);
@@ -74,9 +99,30 @@ namespace Flowerfinder.Controllers
                         season = match.BloomSeason.Label()
                     }
                 };
-            });
+            }).ToList();
 
-            return Ok(new { demo = _plantNet.IsDemo, guesses = result });
+            // remember this find (photo + best guess) for the history page
+            int? recordId = null;
+            var savedPath = await _photos.SaveAsync(new MemoryStream(bytes), ct);
+            if (savedPath != null)
+            {
+                var best = guesses[0];
+                var record = new IdentifyRecord
+                {
+                    DateTaken = DateTime.UtcNow,
+                    ImagePath = savedPath,
+                    TopScientificName = best.ScientificName,
+                    TopCommonName = best.CommonName,
+                    TopScorePercent = (int)Math.Round(best.Score * 100),
+                    MatchedFlowerId = FindMatch(flowers, best)?.Id,
+                    Demo = _plantNet.IsDemo
+                };
+                _db.IdentifyRecords.Add(record);
+                await _db.SaveChangesAsync(ct);
+                recordId = record.Id;
+            }
+
+            return Ok(new { demo = _plantNet.IsDemo, guesses = result, record = recordId });
         }
 
         // exact scientific name first, then same genus, then common name

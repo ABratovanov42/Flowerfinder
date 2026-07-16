@@ -61,7 +61,7 @@
     {
         @* cinematic hero: the photo carries the title on a soft scrim *@
         <div class="cine-hero">
-            <img class="detail-photo" src="@Model.ImagePath" alt="@Model.CommonName" />
+            <img class="detail-photo lightboxable" src="@Model.ImagePath" alt="@Model.CommonName" />
             <div class="cine-scrim" aria-hidden="true"></div>
             <div class="cine-copy">
                 <h1>@Model.CommonName</h1>
@@ -87,15 +87,30 @@
         </div>
     }
 
-    @if (!string.IsNullOrWhiteSpace(Model.Colors))
-    {
-        <div class="swatches mb-4">
-            @foreach (var c in Model.Colors.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+    <div class="garden-row">
+        @if (!string.IsNullOrWhiteSpace(Model.Colors))
+        {
+            <div class="swatches">
+                @foreach (var c in Model.Colors.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    <i style="background:@CareLabels.Hex(c)" title="@c"></i>
+                }
+            </div>
+        }
+        <form method="post" asp-action="ToggleGarden" asp-route-id="@Model.Id" class="garden-form">
+            @Html.AntiForgeryToken()
+            @if (Model.IsInGarden)
             {
-                <i style="background:@CareLabels.Hex(c)" title="@c"></i>
+                <button type="submit" class="garden-btn in" title="Remove from my garden">
+                    &#10003; In your garden <span class="garden-off">&times;</span>
+                </button>
             }
-        </div>
-    }
+            else
+            {
+                <button type="submit" class="garden-btn">&#127793; Add to my garden</button>
+            }
+        </form>
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(Model.Description))
     {

@@ -5,7 +5,7 @@
 
 <div class="flower-form">
     <h1>Add a flower</h1>
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
         <partial name="_FlowerForm" model="Model" />
         <button type="submit" class="btn-save">Add to catalog</button>
         <a class="btn-cancel" asp-action="Index">Cancel</a>

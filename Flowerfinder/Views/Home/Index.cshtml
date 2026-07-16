@@ -817,9 +817,18 @@
 @if (monthTasks.Count > 0)
 {
     <section class="month-garden" id="thisMonth">
-        <div class="section-kicker reveal">The gardener's month</div>
-        <h2 class="reveal">@monthName in the garden</h2>
-        <p class="month-lede reveal">What your flowers are asking for right now &mdash; straight from our growing guides.</p>
+        @if (ViewData["HasGarden"] as bool? == true)
+        {
+            <div class="section-kicker reveal">Your garden</div>
+            <h2 class="reveal">Your garden in @monthName</h2>
+            <p class="month-lede reveal">What the flowers you grow are asking for right now. Add or remove flowers from any flower's page.</p>
+        }
+        else
+        {
+            <div class="section-kicker reveal">The gardener's month</div>
+            <h2 class="reveal">@monthName in the garden</h2>
+            <p class="month-lede reveal">What your flowers are asking for right now &mdash; straight from our growing guides. Tip: mark the flowers you grow with <em>Add to my garden</em> and this becomes your personal to-do list.</p>
+        }
         <div class="task-grid">
             @foreach (var t in monthTasks)
             {

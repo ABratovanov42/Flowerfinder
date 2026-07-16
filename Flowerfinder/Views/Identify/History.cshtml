@@ -1,0 +1,52 @@
+@model List<IdentifyRecord>
+@{
+    ViewData["Title"] = "Your past finds";
+    var matches = ViewData["Matches"] as Dictionary<int, Flower> ?? new();
+}
+
+<div class="cat-header">
+    <div class="kicker">The field notebook</div>
+    <h1>Your past finds</h1>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="cmp-hint">
+        <p>Nothing here yet — every flower you identify will be kept as a find.</p>
+        <p class="cmp-hint-sub"><a class="cmp-guide" asp-action="Index">Identify your first flower &rarr;</a></p>
+    </div>
+}
+else
+{
+    <div class="hist-grid">
+        @foreach (var r in Model)
+        {
+            var matched = r.MatchedFlowerId != null && matches.TryGetValue(r.MatchedFlowerId.Value, out var m) ? m : null;
+            <div class="hist-card">
+                <img class="hist-photo lightboxable" src="@r.ImagePath" alt="@(r.TopCommonName ?? r.TopScientificName ?? "Identified flower")" loading="lazy" />
+                <div class="hist-body">
+                    <div class="hist-date">@r.DateTaken.ToLocalTime().ToString("d MMMM yyyy · HH:mm")@(r.Demo ? " · demo" : "")</div>
+                    <div class="hist-name">@(r.TopCommonName ?? r.TopScientificName)</div>
+                    @if (r.TopCommonName != null && r.TopScientificName != null)
+                    {
+                        <div class="hist-sci">@r.TopScientificName</div>
+                    }
+                    <div class="hist-score">@r.TopScorePercent% sure</div>
+                    @if (matched != null)
+                    {
+                        <a class="cmp-guide" asp-controller="Flowers" asp-action="Details" asp-route-id="@matched.Id">In the catalog: @matched.CommonName &rarr;</a>
+                    }
+                    else
+                    {
+                        <a class="cmp-guide" asp-controller="Flowers" asp-action="Create"
+                           asp-route-fromRecord="@r.Id">Add to my catalog &rarr;</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="cat-admin-link">
+    <a asp-action="Index">&larr; Identify another flower</a>
+</div>
