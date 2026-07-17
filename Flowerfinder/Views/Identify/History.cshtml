@@ -11,9 +11,20 @@
 
 @if (Model.Count == 0)
 {
-    <div class="cmp-hint">
-        <p>Nothing here yet — every flower you identify will be kept as a find.</p>
-        <p class="cmp-hint-sub"><a class="cmp-guide" asp-action="Index">Identify your first flower &rarr;</a></p>
+    <div class="empty-art">
+        @* a closed field notebook with a pressed flower peeking out *@
+        <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg"
+             stroke="#c9688f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="55" y="25" width="90" height="70" rx="6" />
+            <path d="M70 25 v70" opacity="0.5" />
+            <path d="M55 45 h-8 M55 60 h-8 M55 75 h-8" opacity="0.6" />
+            <path d="M145 55 C155 48 162 46 168 48 C164 56 156 58 148 56" fill="#f5aecb" fill-opacity="0.35" />
+            <circle cx="171" cy="47" r="2.4" fill="#f2cd7d" fill-opacity="0.85" />
+            <path d="M85 50 h40 M85 62 h40 M85 74 h26" opacity="0.45" />
+        </svg>
+        <p>Your field notebook is empty.</p>
+        <p class="empty-sub">Every flower you identify is pressed in here &mdash; the photo, the name, and how sure we were.</p>
+        <a class="btn-find" asp-action="Index">Identify your first flower</a>
     </div>
 }
 else

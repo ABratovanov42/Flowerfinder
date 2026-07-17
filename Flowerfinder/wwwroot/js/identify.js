@@ -6,7 +6,12 @@
     const form = document.getElementById("idForm");
     if (!form) return; // identification not configured
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // ?motion=1 previews the full experience despite the OS reduced-motion
+    // setting — same convention as home.js
+    if (new URLSearchParams(location.search).has("motion"))
+        document.documentElement.classList.add("force-motion");
+    const reduce = !document.documentElement.classList.contains("force-motion")
+        && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const analyzeUrl = form.dataset.analyzeUrl;
     const zone = document.getElementById("dropZone");
     const input = document.getElementById("photoInput");
@@ -23,7 +28,9 @@
 
     function setState(state) {
         show(zone, state === "drop");
-        show(preview, state === "preview");
+        // while thinking, the photo stays visible with a scan sweeping over it
+        show(preview, state === "preview" || state === "thinking");
+        preview.classList.toggle("scanning", state === "thinking");
         show(thinking, state === "thinking");
         show(results, state === "results");
     }

@@ -55,13 +55,17 @@
 </div>
 
 <div class="flower-detail">
+    @* soft page glow in the flower's own colour (detail.js reads the photo) *@
+    <div class="detail-tint" aria-hidden="true"></div>
+
     <a class="back" asp-action="Index">&larr; Back to the catalog</a>
 
     @if (!string.IsNullOrWhiteSpace(Model.ImagePath))
     {
         @* cinematic hero: the photo carries the title on a soft scrim *@
         <div class="cine-hero">
-            <img class="detail-photo lightboxable" src="@Model.ImagePath" alt="@Model.CommonName" />
+            <img class="detail-photo lightboxable" src="@Model.ImagePath" alt="@Model.CommonName"
+                 style="view-transition-name: flower-@Model.Id" />
             <div class="cine-scrim" aria-hidden="true"></div>
             <div class="cine-copy">
                 <h1>@Model.CommonName</h1>
@@ -338,7 +342,8 @@
                         @if (!string.IsNullOrWhiteSpace(r.ImagePath))
                         {
                             <div class="photo-frame">
-                                <img class="card-photo" src="@r.ImagePath" alt="@r.CommonName" loading="lazy" />
+                                <img class="card-photo" src="@r.ImagePath" alt="@r.CommonName" loading="lazy"
+                                     style="view-transition-name: flower-@r.Id" />
                                 <span class="view-hint">View &rarr;</span>
                             </div>
                         }

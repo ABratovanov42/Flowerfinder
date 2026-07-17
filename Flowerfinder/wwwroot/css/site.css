@@ -1052,6 +1052,275 @@ footer.ff-foot .foot-fine {
   box-shadow: 0 0 0 3px rgba(var(--rose-rgb), 0.22);
 }
 
+/* ---- shared-element morph: card photos grow into the detail hero ---- */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*) {
+    animation-duration: 0.34s;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+}
+
+/* ---- flower of the day (catalog front door) ---- */
+.fotd {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) 3fr;
+  gap: 0;
+  max-width: 1060px;
+  margin: 0 auto 2.2rem;
+  text-decoration: none;
+  background: rgba(var(--card-rgb), 0.72);
+  border: 1px solid rgba(var(--card-rgb), 0.7);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 14px 44px rgba(var(--shadow-rgb), 0.1);
+  transition: transform 0.3s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.3s;
+}
+
+html.dark .fotd { border-color: rgba(255, 255, 255, 0.07); }
+
+.fotd:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 56px rgba(var(--shadow-rgb), 0.15);
+}
+
+.fotd-photo { overflow: hidden; }
+
+.fotd-photo img {
+  width: 100%;
+  height: 100%;
+  min-height: 230px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s var(--ease-soft);
+}
+
+.fotd:hover .fotd-photo img { transform: scale(1.05); }
+
+.fotd-body {
+  padding: 1.8rem 2rem;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  align-self: center;
+}
+
+.fotd-kicker {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--rose);
+  margin-bottom: 0.6rem;
+}
+
+.fotd-body h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 550;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  color: var(--ink);
+  margin: 0 0 0.15rem;
+}
+
+.fotd-sci {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.8rem;
+}
+
+.fotd-body p {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+.fotd-cta { font-weight: 600; font-size: 0.9rem; color: var(--rose); }
+
+@media (max-width: 700px) {
+  .fotd { grid-template-columns: 1fr; }
+  .fotd-photo img { min-height: 0; aspect-ratio: 16 / 9; }
+}
+
+/* ---- my garden: the bed ---- */
+.bed-lede {
+  text-align: center;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: var(--ink-soft);
+  margin: -0.8rem auto 1.8rem;
+}
+
+.bed-wrap {
+  max-width: 1060px;
+  margin: 0 auto 3rem;
+  padding: 1.8rem 1.6rem 2.2rem;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(var(--card-rgb), 0.25), rgba(139, 109, 78, 0.10));
+  border: 1px solid rgba(var(--ink-rgb), 0.07);
+}
+
+.bed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.3rem;
+  align-items: end;
+}
+
+.bed-card {
+  display: block;
+  text-decoration: none;
+  background: rgba(var(--card-rgb), 0.8);
+  border: 1px solid rgba(var(--card-rgb), 0.7);
+  border-radius: 18px;
+  padding: 1rem 1rem 1.1rem;
+  box-shadow: 0 10px 30px rgba(var(--shadow-rgb), 0.09);
+  transition: transform 0.3s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.3s;
+}
+
+html.dark .bed-card { border-color: rgba(255, 255, 255, 0.07); }
+
+/* planted, not filed: cards lean and stand at slightly different heights */
+.bed-card:nth-child(3n+1) { transform: rotate(-0.8deg); }
+.bed-card:nth-child(3n+2) { transform: rotate(0.6deg) translateY(-8px); }
+.bed-card:nth-child(3n)   { transform: rotate(0.2deg) translateY(-16px); }
+
+.bed-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 18px 44px rgba(var(--shadow-rgb), 0.14);
+}
+
+.bed-photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+  margin-bottom: 0.7rem;
+}
+
+.bed-card:nth-child(even) .bed-photo { aspect-ratio: 4 / 3; }
+
+.bed-card h3 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 550;
+  font-size: 1.12rem;
+  color: var(--ink);
+  margin: 0;
+}
+
+.bed-card .sci {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.5rem;
+}
+
+.bed-task {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  border-top: 1px dashed rgba(var(--ink-rgb), 0.15);
+  padding-top: 0.5rem;
+}
+
+.bed-task span { font-weight: 600; color: var(--rose); }
+
+/* ---- illustrated empty states ---- */
+.empty-art {
+  text-align: center;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  color: var(--ink-soft);
+  margin: 2.5rem auto 4rem;
+  max-width: 34em;
+}
+
+.empty-art svg { width: 170px; margin-bottom: 0.8rem; opacity: 0.9; }
+
+.empty-art p { margin: 0.2rem 0; font-weight: 600; color: var(--ink); }
+
+.empty-art .empty-sub {
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.3rem;
+}
+
+/* ---- the flower's own colour washes the top of its page ---- */
+.flower-detail { position: relative; }
+
+.detail-tint {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1250px, 96vw);
+  height: 560px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(closest-side,
+      rgba(var(--tint, var(--rose-rgb)), 0.20), transparent 72%);
+  transition: opacity 0.6s;
+}
+
+html.dark .detail-tint {
+  background: radial-gradient(closest-side,
+      rgba(var(--tint, var(--rose-rgb)), 0.16), transparent 72%);
+}
+
+/* ---- storybook drop cap on the flower's story ---- */
+.flower-detail > .story:first-of-type::first-letter {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 3.1em;
+  line-height: 0.85;
+  float: left;
+  padding: 0.06em 0.14em 0 0;
+  color: var(--rose);
+}
+
+/* ---- petal burst (garden button) ---- */
+.petal-bit {
+  position: fixed;
+  z-index: 250;
+  width: 10px;
+  height: 14px;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 30% 30%, #ffd9e5, #f3a5c3);
+  border-radius: 62% 38% 55% 45%;
+}
+
+/* ---- identify: light sweep while the photo is being read ---- */
+.id-preview.scanning .preview-actions { display: none; }
+
+.id-preview.scanning .preview-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+.id-preview.scanning .preview-frame::after {
+  content: "";
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  top: -45%;
+  height: 42%;
+  background: linear-gradient(180deg,
+      transparent,
+      rgba(var(--rose-light-rgb), 0.4) 45%,
+      rgba(255, 255, 255, 0.5) 50%,
+      rgba(var(--rose-light-rgb), 0.4) 55%,
+      transparent);
+  animation: scanSweep 1.6s ease-in-out infinite;
+}
+
+@keyframes scanSweep {
+  to { top: 145%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not(.force-motion) .id-preview.scanning .preview-frame::after { animation: none; display: none; }
+}
+
 /* ---- photo upload field on the flower form ---- */
 .photo-current {
   display: flex;

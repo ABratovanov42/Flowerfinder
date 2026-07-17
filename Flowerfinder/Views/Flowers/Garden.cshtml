@@ -1,0 +1,54 @@
+@model List<Flower>
+@{
+    ViewData["Title"] = "My garden";
+    var tasks = ViewData["Tasks"] as Dictionary<int, string?> ?? new();
+    var monthName = ViewData["MonthName"] as string ?? "";
+}
+
+<div class="cat-header">
+    <div class="kicker">Your patch of earth</div>
+    <h1>My garden</h1>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-art">
+        @* two waiting pots, ready for planting *@
+        <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg"
+             stroke="#c9688f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M45 60 h50 l-7 45 h-36 z" />
+            <path d="M42 60 h56 v-8 h-56 z" fill="#f5aecb" fill-opacity="0.25" />
+            <path d="M125 75 h40 l-5 30 h-30 z" />
+            <path d="M122 75 h46 v-7 h-46 z" fill="#f5aecb" fill-opacity="0.25" />
+            <path d="M70 52 C70 40 66 34 60 30 M70 52 C70 42 76 36 82 34" opacity="0.7" />
+            <circle cx="60" cy="28" r="2.5" fill="#f2cd7d" fill-opacity="0.8" />
+        </svg>
+        <p>Nothing planted yet.</p>
+        <p class="empty-sub">Open any flower and press <strong>&#127793; Add to my garden</strong> &mdash; it will take root here, and the home page will start telling you what it needs each month.</p>
+        <a class="btn-find" asp-action="Index">Browse the catalog</a>
+    </div>
+}
+else
+{
+    <p class="bed-lede">@Model.Count @(Model.Count == 1 ? "flower" : "flowers") in the ground &middot; what @monthName asks of them</p>
+    <div class="bed-wrap">
+        <div class="bed-grid">
+            @foreach (var f in Model)
+            {
+                <a class="bed-card" asp-action="Details" asp-route-id="@f.Id">
+                    @if (!string.IsNullOrWhiteSpace(f.ImagePath))
+                    {
+                        <img class="bed-photo" src="@f.ImagePath" alt="@f.CommonName" loading="lazy"
+                             style="view-transition-name: flower-@f.Id" />
+                    }
+                    <h3>@f.CommonName</h3>
+                    <div class="sci">@f.ScientificName</div>
+                    @if (tasks.TryGetValue(f.Id, out var task) && task != null)
+                    {
+                        <div class="bed-task"><span>@monthName:</span> @task</div>
+                    }
+                </a>
+            }
+        </div>
+    </div>
+}

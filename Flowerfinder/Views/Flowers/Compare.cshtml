@@ -32,9 +32,24 @@
 
 @if (chosen.Count < 2)
 {
-    <div class="cmp-hint">
+    <div class="empty-art">
+        @* two flowers leaning toward each other, waiting to be compared *@
+        <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg"
+             stroke="#c9688f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M70 112 C68 88 72 70 78 52" />
+            <path d="M130 112 C132 88 128 70 122 52" />
+            <path d="M78 50 C70 40 70 28 78 20 C86 28 86 40 78 50" fill="#f5aecb" fill-opacity="0.4" />
+            <path d="M78 50 C70 40 70 28 78 20 C86 28 86 40 78 50" fill="#f5aecb" fill-opacity="0.4" transform="rotate(70 78 46)" />
+            <path d="M78 50 C70 40 70 28 78 20 C86 28 86 40 78 50" fill="#f5aecb" fill-opacity="0.4" transform="rotate(-70 78 46)" />
+            <circle cx="78" cy="46" r="4.5" fill="#f2cd7d" fill-opacity="0.85" />
+            <path d="M122 50 C114 40 114 28 122 20 C130 28 130 40 122 50" fill="#e8c95a" fill-opacity="0.3" />
+            <path d="M122 50 C114 40 114 28 122 20 C130 28 130 40 122 50" fill="#e8c95a" fill-opacity="0.3" transform="rotate(70 122 46)" />
+            <path d="M122 50 C114 40 114 28 122 20 C130 28 130 40 122 50" fill="#e8c95a" fill-opacity="0.3" transform="rotate(-70 122 46)" />
+            <circle cx="122" cy="46" r="4.5" fill="#c9688f" fill-opacity="0.5" />
+            <path d="M95 78 h10 M100 73 v10" opacity="0.6" />
+        </svg>
         <p>Pick at least two flowers above to see them side by side.</p>
-        <p class="cmp-hint-sub">Rows where they differ get a soft highlight, so the differences jump out.</p>
+        <p class="empty-sub">Rows where they differ get a soft highlight, so the differences jump out.</p>
     </div>
 }
 else

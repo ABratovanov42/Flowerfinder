@@ -3,7 +3,10 @@
 //  in on scroll, and a sticky mini-bar once the title is gone.
 // ============================================================
 (() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // ?motion=1 previews the full experience despite the OS reduced-motion
+    // setting — same convention as home.js
+    const forceMotion = new URLSearchParams(location.search).has("motion");
+    const reduce = !forceMotion && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // hero photo drifts slower than the page (gentle depth)
     const photo = document.querySelector(".detail-photo");
@@ -18,6 +21,63 @@
                 ticking = false;
             });
         }, { passive: true });
+    }
+
+    // ---- photo tint: the page glows softly in the flower's own colour ----
+    const tintEl = document.querySelector(".detail-tint");
+    if (photo && tintEl) {
+        const applyTint = () => {
+            try {
+                const s = 24;
+                const c = document.createElement("canvas");
+                c.width = s; c.height = s;
+                const g = c.getContext("2d", { willReadFrequently: true });
+                // sample the middle of the photo — that's where the flower is,
+                // not the sky or foliage around the edges
+                const w = photo.naturalWidth, h = photo.naturalHeight;
+                g.drawImage(photo, w * 0.2, h * 0.2, w * 0.6, h * 0.6, 0, 0, s, s);
+                const d = g.getImageData(0, 0, s, s).data;
+                let r = 0, gr = 0, b = 0, n = 0;
+                for (let i = 0; i < d.length; i += 4) {
+                    const R = d[i], G = d[i + 1], B = d[i + 2];
+                    const mx = Math.max(R, G, B), mn = Math.min(R, G, B);
+                    if (mx - mn < 24 || mx < 40 || mn > 235) continue; // skip greys and extremes
+                    r += R; gr += G; b += B; n++;
+                }
+                if (n > 20) {
+                    tintEl.style.setProperty("--tint",
+                        Math.round(r / n) + ", " + Math.round(gr / n) + ", " + Math.round(b / n));
+                }
+            } catch (e) { /* canvas unavailable — the default rose glow stays */ }
+        };
+        photo.complete && photo.naturalWidth ? applyTint() : photo.addEventListener("load", applyTint, { once: true });
+    }
+
+    // ---- petal burst when a flower joins the garden ----
+    const gardenForm = document.querySelector(".garden-form");
+    const gardenBtn = gardenForm?.querySelector(".garden-btn");
+    if (gardenForm && gardenBtn && !gardenBtn.classList.contains("in") && !reduce) {
+        gardenForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const rect = gardenBtn.getBoundingClientRect();
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement("i");
+                p.className = "petal-bit";
+                p.style.left = rect.left + rect.width / 2 + "px";
+                p.style.top = rect.top + rect.height / 2 + "px";
+                document.body.appendChild(p);
+                const ang = (Math.PI * 2 * i) / 10 + Math.random() * 0.6;
+                const dist = 42 + Math.random() * 48;
+                p.animate(
+                    [
+                        { transform: "translate(0,0) rotate(0deg)", opacity: 1 },
+                        { transform: "translate(" + Math.cos(ang) * dist + "px," + (Math.sin(ang) * dist - 24) + "px) rotate(" + (200 + Math.random() * 160) + "deg)", opacity: 0 }
+                    ],
+                    { duration: 520 + Math.random() * 180, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" }
+                ).onfinish = () => p.remove();
+            }
+            setTimeout(() => gardenForm.submit(), 460); // let the petals fly first
+        });
     }
 
     // care facts + related cards rise in as they enter the viewport

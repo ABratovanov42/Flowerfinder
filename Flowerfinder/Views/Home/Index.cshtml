@@ -796,7 +796,8 @@
                         @if (!string.IsNullOrWhiteSpace(f.ImagePath))
                         {
                             <div class="photo-frame">
-                                <img class="card-photo" src="@f.ImagePath" alt="@f.CommonName" loading="lazy" />
+                                <img class="card-photo" src="@f.ImagePath" alt="@f.CommonName" loading="lazy"
+                                     style="view-transition-name: flower-@f.Id" />
                                 <span class="view-hint">View &rarr;</span>
                             </div>
                         }
@@ -845,6 +846,12 @@
                 </a>
             }
         </div>
+        @if (ViewData["HasGarden"] as bool? == true)
+        {
+            <div class="browse-all reveal" style="text-align:center; margin-top:1.8rem;">
+                <a class="btn-ghost" asp-controller="Flowers" asp-action="Garden">Visit your garden &rarr;</a>
+            </div>
+        }
     </section>
 }
 

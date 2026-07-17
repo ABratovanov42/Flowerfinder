@@ -75,8 +75,9 @@
                     <span class="ff-pill" aria-hidden="true"></span>
                     <ul class="ff-links">
                         <li><a class="@(navController == "Home" && navAction == "Index" ? "active" : null)" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li id="ffCatalogItem"><a class="@(navController == "Flowers" && navAction != "Compare" ? "active" : null)" asp-area="" asp-controller="Flowers" asp-action="Index">Catalog</a></li>
+                        <li id="ffCatalogItem"><a class="@(navController == "Flowers" && navAction != "Compare" && navAction != "Garden" ? "active" : null)" asp-area="" asp-controller="Flowers" asp-action="Index">Catalog</a></li>
                         <li><a class="@(navAction == "Compare" ? "active" : null)" asp-area="" asp-controller="Flowers" asp-action="Compare">Compare</a></li>
+                        <li><a class="@(navAction == "Garden" ? "active" : null)" asp-area="" asp-controller="Flowers" asp-action="Garden">Garden</a></li>
                         <li><a class="@(navAction == "Privacy" ? "active" : null)" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
                     </ul>
                 </div>
@@ -132,6 +133,7 @@
                         <a asp-controller="Identify" asp-action="Index">Identify a flower &rarr;</a>
                         <a asp-controller="Flowers" asp-action="Index">Browse all flowers</a>
                         <a asp-controller="Flowers" asp-action="Compare">Compare flowers</a>
+                        <a asp-controller="Flowers" asp-action="Garden">My garden</a>
                         <a asp-controller="Flowers" asp-action="Create">Add a flower</a>
                     </div>
                 </div>
@@ -144,8 +146,9 @@
         <a style="--i:1" asp-controller="Identify" asp-action="Index">Identify</a>
         <a style="--i:2" asp-controller="Flowers" asp-action="Index">Catalog</a>
         <a style="--i:3" asp-controller="Flowers" asp-action="Compare">Compare</a>
-        <a style="--i:4" asp-controller="Flowers" asp-action="Create">Add a flower</a>
-        <a style="--i:5" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <a style="--i:4" asp-controller="Flowers" asp-action="Garden">My garden</a>
+        <a style="--i:5" asp-controller="Flowers" asp-action="Create">Add a flower</a>
+        <a style="--i:6" asp-controller="Home" asp-action="Privacy">Privacy</a>
     </div>
     @* ---------- Command palette (Ctrl+K) ---------- *@
     <div class="palette" id="palette" hidden role="dialog" aria-modal="true" aria-label="Search flowers">

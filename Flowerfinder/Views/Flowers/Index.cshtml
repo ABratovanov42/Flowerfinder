@@ -37,6 +37,17 @@
     string WithoutFilter(string drop) => CatalogUrl(drop: drop);
 
     var chipColors = new[] { "Red", "Pink", "White", "Yellow", "Orange", "Purple", "Blue" };
+
+    var fotd = ViewData["Fotd"] as Flower;
+
+    // first sentence-ish of the story, for the featured card
+    string Teaser(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return "";
+        var cut = text.IndexOf(". ", StringComparison.Ordinal);
+        if (cut > 30 && cut < 200) return text[..(cut + 1)];
+        return text.Length <= 180 ? text : text[..177].TrimEnd() + "…";
+    }
 }
 
 <div class="cat-header">
@@ -122,6 +133,25 @@
 
 <div class="cat-count">@total @(total == 1 ? "flower" : "flowers")@(anyFilter ? " found" : " in the catalog")</div>
 
+@if (fotd != null)
+{
+    <a class="fotd" asp-action="Details" asp-route-id="@fotd.Id">
+        @if (!string.IsNullOrWhiteSpace(fotd.ImagePath))
+        {
+            <div class="fotd-photo">
+                <img src="@fotd.ImagePath" alt="@fotd.CommonName" style="view-transition-name: flower-@fotd.Id" />
+            </div>
+        }
+        <div class="fotd-body">
+            <div class="fotd-kicker">&#10047; Flower of the day</div>
+            <h2>@fotd.CommonName</h2>
+            <div class="fotd-sci">@fotd.ScientificName</div>
+            <p>@Teaser(fotd.Description)</p>
+            <span class="fotd-cta">Read the story &rarr;</span>
+        </div>
+    </a>
+}
+
 @* shown when the server found nothing — and revealed live when a
    search leaves no cards standing (catalog.js) *@
 <div class="cat-empty" id="catEmpty" hidden="@(Model.Count == 0 ? null : "hidden")">
@@ -153,7 +183,10 @@
                 @if (!string.IsNullOrWhiteSpace(f.ImagePath))
                 {
                     <div class="photo-frame">
-                        <img class="card-photo" src="@f.ImagePath" alt="@f.CommonName" loading="lazy" />
+                        @* the photo morphs into the detail hero (view transitions);
+                           the featured card above already claims this flower's name *@
+                        <img class="card-photo" src="@f.ImagePath" alt="@f.CommonName" loading="lazy"
+                             style="@(f.Id == fotd?.Id ? null : $"view-transition-name: flower-{f.Id}")" />
                         <span class="view-hint">View &rarr;</span>
                     </div>
                 }

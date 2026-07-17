@@ -49,6 +49,17 @@ namespace Flowerfinder.Controllers
             var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)PageSize));
             page = Math.Clamp(page, 1, totalPages);
 
+            // Flower of the day — the catalog's front door, page 1 unfiltered.
+            // Picked by the date, so everyone sees the same flower all day.
+            var unfiltered = string.IsNullOrWhiteSpace(q) && string.IsNullOrWhiteSpace(color)
+                && !sun.HasValue && !season.HasValue && !water.HasValue && !perennial.HasValue;
+            if (unfiltered && page == 1 && total > 0)
+            {
+                var ids = await _db.Flowers.OrderBy(f => f.Id).Select(f => f.Id).ToListAsync();
+                var today = DateTime.Now;
+                ViewData["Fotd"] = await _db.Flowers.FindAsync(ids[(today.Year * 366 + today.DayOfYear) % ids.Count]);
+            }
+
             ViewData["q"] = q;
             ViewData["color"] = color;
             ViewData["sun"] = sun;
@@ -118,6 +129,27 @@ namespace Flowerfinder.Controllers
             ViewData["Related"] = related;
 
             return View(flower);
+        }
+
+        // GET /Flowers/Garden — the flowers you grow, laid out like a bed
+        public async Task<IActionResult> Garden()
+        {
+            var flowers = await _db.Flowers
+                .Where(f => f.IsInGarden)
+                .OrderBy(f => f.CommonName)
+                .ToListAsync();
+
+            // each flower's job for the current month, from its care calendar
+            var monthKey = DateTime.Now.ToString("MMM");
+            ViewData["Tasks"] = flowers.ToDictionary(f => f.Id, f =>
+                (f.CareCalendar ?? "")
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Select(l => l.Split('|', 2))
+                    .Where(p => p.Length == 2 && p[0].Equals(monthKey, StringComparison.OrdinalIgnoreCase))
+                    .Select(p => p[1])
+                    .FirstOrDefault());
+            ViewData["MonthName"] = DateTime.Now.ToString("MMMM");
+            return View(flowers);
         }
 
         // POST /Flowers/ToggleGarden/5 — add or remove a flower from "my garden"
