@@ -1052,6 +1052,76 @@ footer.ff-foot .foot-fine {
   box-shadow: 0 0 0 3px rgba(var(--rose-rgb), 0.22);
 }
 
+/* ---- brand-tinted selection and a slim scrollbar ---- */
+::selection {
+  background: rgba(var(--rose-rgb), 0.25);
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--ink-rgb), 0.3) transparent;
+}
+
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--ink-rgb), 0.22);
+  border-radius: 8px;
+  border: 3px solid var(--cream);
+}
+
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--rose-rgb), 0.55); }
+
+/* ---- print: a flower page becomes a clean care sheet ---- */
+@media print {
+  .ff-nav, .ff-veil, .nav-fade, .ff-mobile, .ff-foot, .mini-bar,
+  .palette, .back, .detail-admin, .related, .garden-form, .guide-toc,
+  .detail-tint, .lb-veil, .cat-admin-link, .ff-loader {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #222 !important;
+  }
+
+  .cine-hero { height: auto; }
+
+  .cine-hero .detail-photo {
+    position: static;
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    transform: none !important;
+  }
+
+  .cine-scrim { display: none; }
+
+  .cine-copy {
+    position: static;
+    padding: 0.6rem 0 0;
+  }
+
+  .cine-copy h1, .cine-copy .sci-line {
+    color: #222 !important;
+    text-shadow: none !important;
+  }
+
+  /* reveal-on-scroll content must be visible on paper */
+  .flower-detail.anim .fact, .flower-detail.anim .grow-step,
+  .flower-detail.anim .g-sec, .flower-detail.anim .prob-card,
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .flower-card, .fact, .g-sec, .prob-card {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+}
+
 /* ---- shared-element morph: card photos grow into the detail hero ---- */
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-group(*) {
@@ -1599,6 +1669,19 @@ html.flower-cursor textarea {
 
 .cmp-table tr.differs td {
   background: rgba(var(--rose-rgb), 0.07);
+}
+
+.cmp-radar {
+  width: 110px;
+  color: var(--ink);
+  display: block;
+}
+
+.cmp-radar .radar-label {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  fill: var(--ink-faint);
 }
 
 .cmp-guide {

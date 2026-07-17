@@ -182,7 +182,9 @@
             <a class="flower-card" asp-action="Details" asp-route-id="@f.Id" style="--d:@i">
                 @if (!string.IsNullOrWhiteSpace(f.ImagePath))
                 {
-                    <div class="photo-frame">
+                    var loadTint = (f.Colors ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
+                    @* while the photo lazy-loads, the frame holds the flower's colour *@
+                    <div class="photo-frame" style="@(loadTint != null ? $"background:{CareLabels.Hex(loadTint)}26" : null)">
                         @* the photo morphs into the detail hero (view transitions);
                            the featured card above already claims this flower's name *@
                         <img class="card-photo" src="@f.ImagePath" alt="@f.CommonName" loading="lazy"

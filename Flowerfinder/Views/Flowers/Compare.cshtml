@@ -8,6 +8,23 @@
     // a row gets the soft highlight when the flowers actually differ there
     bool Differs(Func<Flower, string?> pick) =>
         chosen.Select(f => (pick(f) ?? "").Trim().ToLowerInvariant()).Distinct().Count() > 1;
+
+    // triangle radar: how much sun and water it wants, how long it lives
+    string ProfilePoints(Flower f)
+    {
+        double sun = f.Sunlight switch { Sunlight.FullSun => 3, Sunlight.PartialShade => 2, _ => 1 };
+        double water = f.Watering switch { Watering.Low => 1, Watering.Moderate => 2, _ => 3 };
+        double life = f.IsPerennial ? 3 : 1.5;
+        var vals = new[] { sun, water, life };
+        var pts = new List<string>();
+        for (var i = 0; i < 3; i++)
+        {
+            var ang = (-90 + i * 120) * Math.PI / 180;
+            var r = 10 + vals[i] / 3.0 * 30;
+            pts.Add($"{60 + r * Math.Cos(ang):0.#},{56 + r * Math.Sin(ang):0.#}");
+        }
+        return string.Join(" ", pts);
+    }
 }
 
 <div class="cat-header">
@@ -90,6 +107,27 @@ else
                 <tr class="@(Differs(f => f.IsPerennial ? "p" : "a") ? "differs" : null)">
                     <th class="cmp-label" scope="row">Type</th>
                     @foreach (var f in chosen) { <td>@(f.IsPerennial ? "Perennial — comes back" : "Annual — replant yearly")</td> }
+                </tr>
+                <tr>
+                    <th class="cmp-label" scope="row">Profile</th>
+                    @foreach (var f in chosen)
+                    {
+                        <td>
+                            <svg class="cmp-radar" viewBox="0 0 120 110" role="img"
+                                 aria-label="Care profile: sun, water and lifespan">
+                                <polygon points="60,16 94.6,76 25.4,76" fill="none"
+                                         stroke="currentColor" stroke-opacity="0.15" />
+                                <path d="M60 56 L60 16 M60 56 L94.6 76 M60 56 L25.4 76"
+                                      stroke="currentColor" stroke-opacity="0.12" />
+                                <polygon points="@ProfilePoints(f)"
+                                         fill="rgba(194, 84, 124, 0.22)" stroke="#c2547c" stroke-width="1.6"
+                                         stroke-linejoin="round" />
+                                <text x="60" y="9" text-anchor="middle" class="radar-label">Sun</text>
+                                <text x="101" y="88" text-anchor="middle" class="radar-label">Water</text>
+                                <text x="19" y="88" text-anchor="middle" class="radar-label">Years</text>
+                            </svg>
+                        </td>
+                    }
                 </tr>
                 <tr>
                     <th class="cmp-label" scope="row">Colours</th>
