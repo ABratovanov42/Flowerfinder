@@ -60,3 +60,59 @@ Commons page, linked below via the source URL).
 | black-eyed-susan.jpg | https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Rudbeckia_hirta_kz03.jpg/960px-Rudbeckia_hirta_kz03.jpg |
 | coneflower.jpg | https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Echinacea_purpurea_Grandview_Prairie.jpg/960px-Echinacea_purpurea_Grandview_Prairie.jpg |
 | bleeding-heart.jpg | https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Dicentra-spectabilis.jpg/960px-Dicentra-spectabilis.jpg |
+
+## Catalog expansion to 100 (iNaturalist)
+
+The 48 photos below were fetched from [iNaturalist](https://www.inaturalist.org) taxon
+photos, filtered to Creative Commons licences. Attribution per photo:
+
+| File | Species | Photographer / licence |
+|---|---|---|
+| allium.jpg | _Allium giganteum_ | (c) Наталья Бешко, some rights reserved (CC BY-NC), uploaded by Наталья Бешко |
+| alstroemeria.jpg | _Alstroemeria aurea_ | (c) Bárbara Daniela Jara Ríos, some rights reserved (CC BY), uploaded by Bárbara Daniela Jara Ríos |
+| amaryllis.jpg | _Hippeastrum_ | (c) Luca Bove, some rights reserved (CC BY-NC-SA) |
+| anemone.jpg | _Anemone coronaria_ | (c) Bobby McCabe, some rights reserved (CC BY-NC) |
+| aster.jpg | _Symphyotrichum novae-angliae_ | (c) musicmanz, some rights reserved (CC BY-NC), uploaded by musicmanz |
+| azalea.jpg | _Rhododendron simsii_ | (c) H.T.Cheng, some rights reserved (CC BY-NC), uploaded by H.T.Cheng |
+| babys-breath.jpg | _Gypsophila paniculata_ | (c) artiom_prokhorov, some rights reserved (CC BY-NC) |
+| bee-balm.jpg | _Monarda didyma_ | (c) William Van Hemessen, some rights reserved (CC BY-NC), uploaded by William Van Hemessen |
+| bougainvillea.jpg | _Bougainvillea glabra_ | (c) lawspear, some rights reserved (CC BY-NC) |
+| calendula.jpg | _Calendula officinalis_ | (c) S BV, some rights reserved (CC BY-NC-SA) |
+| calla-lily.jpg | _Zantedeschia aethiopica_ | (c) flipsockgrrl, some rights reserved (CC BY-NC-SA) |
+| canna-lily.jpg | _Canna indica_ | (c) orlandomontes, some rights reserved (CC BY-NC), uploaded by orlandomontes |
+| chamomile.jpg | _Matricaria chamomilla_ | (c) anaxvp, some rights reserved (CC BY-NC), uploaded by anaxvp |
+| clematis.jpg | _Clematis × jackmanii_ | (c) alderash, some rights reserved (CC BY-NC), uploaded by alderash |
+| columbine.jpg | _Aquilegia vulgaris_ | (c) Pekka Malinen, some rights reserved (CC BY-NC-SA), uploaded by Pekka Malinen |
+| cyclamen.jpg | _Cyclamen persicum_ | (c) Jens Søgaard Hansen, some rights reserved (CC BY-NC), uploaded by Jens Søgaard Hansen |
+| edelweiss.jpg | _Leontopodium nivale_ | (c) Sébastien SANT, some rights reserved (CC BY-NC), uploaded by Sébastien SANT |
+| evening-primrose.jpg | _Oenothera biennis_ | (c) Tom Pollard, some rights reserved (CC BY), uploaded by Tom Pollard |
+| fuchsia.jpg | _Fuchsia magellanica_ | (c) Ariel Cabrera Foix, some rights reserved (CC BY-NC-SA), uploaded by Ariel Cabrera Foix |
+| gaillardia.jpg | _Gaillardia_ | (c) Roberto R. Calderón, some rights reserved (CC BY-NC), uploaded by Roberto R. Calderón |
+| gazania.jpg | _Gazania rigens_ | (c) Nicola van Berkel, some rights reserved (CC BY-SA), uploaded by Nicola van Berkel |
+| geranium.jpg | _Pelargonium_ | (c) Peter Lang, some rights reserved (CC BY-NC), uploaded by Peter Lang |
+| grape-hyacinth.jpg | _Muscari armeniacum_ | (c) Norbert Sauberer, some rights reserved (CC BY-NC), uploaded by Norbert Sauberer |
+| heather.jpg | _Calluna vulgaris_ | (c) Sean Womack, some rights reserved (CC BY-NC), uploaded by Sean Womack |
+| hellebore.jpg | _Helleborus niger_ | (c) Alberto Colatore, some rights reserved (CC BY-NC), uploaded by Alberto Colatore |
+| honeysuckle.jpg | _Lonicera periclymenum hispanica_ | (c) Paulo Rocha, some rights reserved (CC BY-NC), uploaded by Paulo Rocha |
+| impatiens.jpg | _Impatiens walleriana_ | (c) Vinicius P. dos S. F., some rights reserved (CC BY-NC), uploaded by Vinicius P. dos S. F. |
+| kangaroo-paw.jpg | _Anigozanthos flavidus_ | (c) Sacha R, some rights reserved (CC BY-NC), uploaded by Sacha R |
+| lily-of-the-valley.jpg | _Convallaria majalis_ | (c) prellinchen, some rights reserved (CC BY-NC) |
+| lisianthus.jpg | _Eustoma russellianum_ | (c) cherishwilliams, some rights reserved (CC BY-NC), uploaded by cherishwilliams |
+| lobelia.jpg | _Lobelia erinus_ | (c) Alexis Tinker-Tsavalas, some rights reserved (CC BY), uploaded by Alexis Tinker-Tsavalas |
+| nigella.jpg | _Nigella damascena_ | (c) Serey Lek, some rights reserved (CC BY-NC), uploaded by Serey Lek |
+| osteospermum.jpg | _Dimorphotheca ecklonis_ | (c) Adriaan Grobler, some rights reserved (CC BY-NC), uploaded by Adriaan Grobler |
+| passionflower.jpg | _Passiflora caerulea_ | (c) Gustavo Fernando Durán, some rights reserved (CC BY-NC-SA) |
+| periwinkle.jpg | _Vinca minor_ | (c) Miroslav Marić, some rights reserved (CC BY-NC), uploaded by Miroslav Marić |
+| phlox.jpg | _Phlox paniculata_ | (c) Joanne Muis Redwood, some rights reserved (CC BY-NC), uploaded by Joanne Muis Redwood |
+| plumeria.jpg | _Plumeria rubra acutifolia_ | (c) szetochunyat_4b24, some rights reserved (CC BY-NC) |
+| poinsettia.jpg | _Euphorbia pulcherrima_ | (c) nmoorhatch, some rights reserved (CC BY), uploaded by nmoorhatch |
+| protea.jpg | _Protea cynaroides_ | no rights reserved, uploaded by Klaus Wehrlin |
+| rhododendron.jpg | _Rhododendron ponticum_ | (c) 103917170835602529469, some rights reserved (CC BY-NC), uploaded by 103917170835602529469 |
+| salvia.jpg | _Salvia splendens_ | (c) Gabrielly Benaducci Tolentino, some rights reserved (CC BY-NC), uploaded by Gabrielly Benaducci Tolentino |
+| scabiosa.jpg | _Scabiosa columbaria_ | (c) Rebecca Ryen-Stols, some rights reserved (CC BY-SA), uploaded by Rebecca Ryen-Stols |
+| stock-flower.jpg | _Matthiola incana_ | (c) Víctor González García, some rights reserved (CC BY-NC), uploaded by Víctor González García |
+| strawflower.jpg | _Xerochrysum bracteatum_ | (c) Max Campbell, some rights reserved (CC BY), uploaded by Max Campbell |
+| sweet-william.jpg | _Dianthus barbatus_ | (c) xulescu_g, some rights reserved (CC BY-SA) |
+| water-lily.jpg | _Nymphaea alba_ | (c) Kristin A. Bakkegard, some rights reserved (CC BY-NC), uploaded by Kristin A. Bakkegard |
+| ﻿agapanthus.jpg | _Agapanthus africanus_ | (c) Nick Helme, some rights reserved (CC BY-NC), uploaded by Nick Helme |
+| astilbe.jpg | _Astilbe × arendsii_ | Wikimedia Commons: https://commons.wikimedia.org/wiki/File:Astilbe_arendsii1.jpg |

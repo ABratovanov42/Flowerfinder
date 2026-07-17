@@ -37,7 +37,9 @@ namespace Flowerfinder.Data
 
             // Catalog expansion: insert any newer flowers not in the database yet
             var existingNames = db.Flowers.Select(f => f.CommonName).ToHashSet();
-            var newcomers = MoreFlowers.All().Where(f => !existingNames.Contains(f.CommonName)).ToList();
+            var newcomers = MoreFlowers.All()
+                .Concat(EvenMoreFlowers.All())
+                .Where(f => !existingNames.Contains(f.CommonName)).ToList();
             if (newcomers.Count > 0)
             {
                 var now = DateTime.UtcNow;
