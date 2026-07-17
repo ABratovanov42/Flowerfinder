@@ -131,7 +131,8 @@ namespace Flowerfinder.Controllers
             return View(flower);
         }
 
-        // GET /Flowers/Garden — the flowers you grow, laid out like a bed
+        // GET /Flowers/Garden — the flowers you grow, laid out like a bed,
+        // plus today's care check-in list
         public async Task<IActionResult> Garden()
         {
             var flowers = await _db.Flowers
@@ -149,7 +150,46 @@ namespace Flowerfinder.Controllers
                     .Select(p => p[1])
                     .FirstOrDefault());
             ViewData["MonthName"] = DateTime.Now.ToString("MMMM");
+
+            // today's check-in list (recent checks cover the longest cadence + this month)
+            var today = DateTime.Today;
+            var lookback = new DateTime(today.Year, today.Month, 1) < today.AddDays(-7)
+                ? new DateTime(today.Year, today.Month, 1) : today.AddDays(-7);
+            var recent = await _db.CareChecks.Where(c => c.Date >= lookback).ToListAsync();
+            ViewData["CareItems"] = CareSchedule.ItemsFor(flowers, recent, today);
+
             return View(flowers);
+        }
+
+        // POST /Flowers/CheckCare — tick or untick one care task (AJAX)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckCare(int flowerId, string task)
+        {
+            if (task != "water" && task != "month") return BadRequest();
+            var flower = await _db.Flowers.FindAsync(flowerId);
+            if (flower == null || !flower.IsInGarden) return NotFound();
+
+            var today = DateTime.Today;
+            // "month" toggles the whole month's row; "water" just today's
+            var windowStart = task == "month" ? new DateTime(today.Year, today.Month, 1) : today;
+            var existing = await _db.CareChecks
+                .Where(c => c.FlowerId == flowerId && c.TaskKey == task && c.Date >= windowStart)
+                .ToListAsync();
+
+            bool done;
+            if (existing.Count > 0)
+            {
+                _db.CareChecks.RemoveRange(existing);
+                done = false;
+            }
+            else
+            {
+                _db.CareChecks.Add(new CareCheck { FlowerId = flowerId, TaskKey = task, Date = today });
+                done = true;
+            }
+            await _db.SaveChangesAsync();
+            return Json(new { done });
         }
 
         // POST /Flowers/ToggleGarden/5 — add or remove a flower from "my garden"

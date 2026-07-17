@@ -162,6 +162,22 @@
         opacity: 0.65;
     }
 
+    /* autumn: amber leaves tumble instead of petals */
+    .petal.leaf {
+        background: radial-gradient(ellipse at 30% 30%, #f0c894, #d98c5d);
+        border-radius: 78% 22% 74% 26%;
+    }
+
+    /* winter: soft snow dust */
+    .petal.snow {
+        background: radial-gradient(circle at 35% 35%, #ffffff, #dfe7f2);
+        border-radius: 50%;
+        opacity: 0.75;
+    }
+
+    html.dark .petal.leaf { opacity: 0.4; }
+    html.dark .petal.snow { opacity: 0.5; }
+
     /* ---------- Hero ---------- */
     .hero {
         min-height: 100vh;
@@ -823,6 +839,14 @@
             <div class="section-kicker reveal">Your garden</div>
             <h2 class="reveal">Your garden in @monthName</h2>
             <p class="month-lede reveal">What the flowers you grow are asking for right now. Add or remove flowers from any flower's page.</p>
+            @if (ViewData["DueCount"] is int due && due > 0)
+            {
+                <div class="due-pill-wrap reveal">
+                    <a class="due-pill" asp-controller="Flowers" asp-action="Garden">
+                        &#128167; @due @(due == 1 ? "flower needs" : "things need") you today &rarr;
+                    </a>
+                </div>
+            }
         }
         else
         {

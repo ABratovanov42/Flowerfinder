@@ -12,5 +12,6 @@ namespace Flowerfinder.Data
 
         public DbSet<Flower> Flowers { get; set; }  // this becomes the "Flowers" table
         public DbSet<IdentifyRecord> IdentifyRecords { get; set; }  // saved photo identifications
+        public DbSet<CareCheck> CareChecks { get; set; }  // ticked-off daily/monthly garden care
     }
 }

@@ -80,6 +80,24 @@
         });
     }
 
+    // guide icons draw themselves in, like the hero flower on the home
+    // page: normalise every stroke, then CSS animates the offset once the
+    // section gets its .in class from the observer below
+    if (!reduce) {
+        document.querySelectorAll(".sec-ico svg").forEach((svg) => {
+            svg.querySelectorAll("path, circle, rect").forEach((shape, i) => {
+                // same technique as the home hero: dash the stroke to its
+                // own length, then the .in rule transitions it to zero
+                let len = 60;
+                try { len = shape.getTotalLength(); } catch (e) { }
+                shape.style.strokeDasharray = len;
+                shape.style.strokeDashoffset = len;
+                shape.style.transitionDelay = 0.15 + i * 0.14 + "s";
+            });
+            svg.classList.add("draws");
+        });
+    }
+
     // care facts + related cards rise in as they enter the viewport
     const detail = document.querySelector(".flower-detail");
     const items = document.querySelectorAll(".fact, .grow-step, .g-sec, .prob-card, .related-grid .flower-card");

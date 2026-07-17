@@ -1,14 +1,48 @@
 @model List<Flower>
+@using Flowerfinder.Services
 @{
     ViewData["Title"] = "My garden";
     var tasks = ViewData["Tasks"] as Dictionary<int, string?> ?? new();
     var monthName = ViewData["MonthName"] as string ?? "";
+    var careItems = ViewData["CareItems"] as List<CareItem> ?? new();
+    var dueCount = careItems.Count(i => !i.Done);
 }
 
 <div class="cat-header">
     <div class="kicker">Your patch of earth</div>
     <h1>My garden</h1>
 </div>
+
+@if (careItems.Count > 0)
+{
+    <div class="care-list" id="careList">
+        @Html.AntiForgeryToken()
+        <div class="care-head">
+            <h2>Today's check-in</h2>
+            <span class="care-count" id="careCount">@(dueCount == 0 ? "All tended 🌿" : $"{dueCount} to do")</span>
+        </div>
+        @foreach (var item in careItems)
+        {
+            <label class="care-row @(item.Done ? "done" : null)">
+                <input type="checkbox" checked="@item.Done"
+                       data-flower="@item.Flower.Id" data-task="@item.TaskKey" />
+                <span class="care-check" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+                         stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 L10 18 L19.5 6.5" /></svg>
+                </span>
+                <span class="care-copy">
+                    <span class="care-label">@item.Label</span>
+                    @if (item.Detail != null)
+                    {
+                        <span class="care-detail">@item.Detail</span>
+                    }
+                </span>
+                <a class="care-flower" asp-action="Details" asp-route-id="@item.Flower.Id"
+                   onclick="event.stopPropagation()">@item.Flower.CommonName</a>
+            </label>
+        }
+    </div>
+}
 
 @if (Model.Count == 0)
 {
@@ -30,8 +64,20 @@
 }
 else
 {
-    <p class="bed-lede">@Model.Count @(Model.Count == 1 ? "flower" : "flowers") in the ground &middot; what @monthName asks of them</p>
-    <div class="bed-wrap">
+    <p class="bed-lede">
+        @Model.Count @(Model.Count == 1 ? "flower" : "flowers") in the ground &middot; what @monthName asks of them
+        <button type="button" class="water-can" id="waterCan" title="Water the garden">
+            <svg viewBox="0 0 32 26" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 10 h12 l-1.4 13 h-9.2 z" />
+                <path d="M9.5 13 C5 13 3 16 3.5 19" />
+                <path d="M21 12 L28 7 M28 7 l-1.8 -0.4 M28 7 l-0.2 1.9" />
+                <ellipse cx="15" cy="10" rx="6" ry="1.6" />
+            </svg>
+            <span>Water the garden</span>
+        </button>
+    </p>
+    <div class="bed-wrap" id="bedWrap">
         <div class="bed-grid">
             @foreach (var f in Model)
             {
@@ -51,4 +97,8 @@ else
             }
         </div>
     </div>
+}
+
+@section Scripts {
+    <script src="~/js/garden.js" asp-append-version="true"></script>
 }

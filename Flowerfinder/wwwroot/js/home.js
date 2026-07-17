@@ -144,14 +144,16 @@ if (!reduceMotion) {
         });
     });
 
-    // a few petals fall gently through the page
+    // a few petals fall gently through the page — except in autumn,
+    // when amber leaves tumble instead, and winter, when snow drifts
+    const season = document.documentElement.dataset.season || "summer";
     const field = document.getElementById("petalField");
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < (season === "winter" ? 14 : 9); i++) {
         const petal = document.createElement("div");
-        petal.className = "petal";
-        const size = gsap.utils.random(10, 20);
+        petal.className = "petal" + (season === "autumn" ? " leaf" : season === "winter" ? " snow" : "");
+        const size = season === "winter" ? gsap.utils.random(4, 8) : gsap.utils.random(10, 20);
         petal.style.width = size + "px";
-        petal.style.height = size * 0.82 + "px";
+        petal.style.height = (season === "winter" ? size : size * 0.82) + "px";
         petal.style.left = gsap.utils.random(2, 96) + "vw";
         field.appendChild(petal);
 

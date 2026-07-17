@@ -65,6 +65,19 @@ namespace Flowerfinder.Controllers
 
             ViewData["MonthTasks"] = monthTasks;
             ViewData["MonthName"] = DateTime.Now.ToString("MMMM");
+
+            // how many care jobs are waiting today (powers the little nudge pill)
+            if (hasGarden)
+            {
+                var today = DateTime.Today;
+                var lookback = new DateTime(today.Year, today.Month, 1) < today.AddDays(-7)
+                    ? new DateTime(today.Year, today.Month, 1) : today.AddDays(-7);
+                var recent = await _db.CareChecks.Where(c => c.Date >= lookback).ToListAsync();
+                var gardenAll = await _db.Flowers.Where(f => f.IsInGarden).ToListAsync();
+                ViewData["DueCount"] = Services.CareSchedule.ItemsFor(gardenAll, recent, today)
+                    .Count(i => !i.Done);
+            }
+
             return View();
         }
 
