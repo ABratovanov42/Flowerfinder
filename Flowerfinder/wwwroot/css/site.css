@@ -2510,9 +2510,13 @@ details.faq p {
 }
 
 @media (max-width: 940px) {
-  .guide-grid { grid-template-columns: 1fr; gap: 0; }
+  /* minmax(0,1fr): a plain 1fr lets the calendar strip's 12 fixed-width
+     months blow the column out past the viewport */
+  .guide-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .guide-toc { display: none; }
 }
+
+.guide-main { min-width: 0; }
 
 .related { margin-top: 3rem; }
 
